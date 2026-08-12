@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Ashen Reference</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0908">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dark Souls Ref">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0908;
+    --card: #17140f;
+    --card-border: #2b2620;
+    --ember: #e8590c;
+    --ember-bright: #ff8c3c;
+    --bone: #e9e1d0;
+    --muted: #8d8474;
+    --estus: #4f7a52;
+    --danger: #8a2c2c;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{margin:0; padding:0; background:var(--bg); color:var(--bone); font-family:'Inter',sans-serif; min-height:100vh;}
+
+  #embers{position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:0;}
+  .ember-particle{
+    position:absolute; bottom:-10px; width:3px; height:3px; border-radius:50%;
+    background: var(--ember-bright); box-shadow:0 0 6px 2px rgba(255,140,60,0.6);
+    animation: rise linear infinite; opacity:0;
+  }
+  @keyframes rise{
+    0%{ transform: translateY(0) translateX(0); opacity:0; }
+    10%{ opacity:.9; } 90%{ opacity:.4; }
+    100%{ transform: translateY(-100vh) translateX(var(--drift,20px)); opacity:0; }
+  }
+
+  .app{position:relative; z-index:1; max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column;}
+
+  header{padding:28px 20px 18px; border-bottom:1px solid var(--card-border); text-align:center; position:relative;}
+  header .glow{position:absolute; top:0; left:50%; transform:translateX(-50%); width:220px; height:120px; background:radial-gradient(ellipse at center, rgba(232,89,12,0.25), transparent 70%); filter: blur(10px); z-index:-1;}
+  h1{font-family:'Cinzel',serif; font-weight:700; letter-spacing:1px; font-size:1.5rem; margin:0; color:var(--bone); text-shadow: 0 0 18px rgba(232,89,12,0.35);}
+  header p{margin:6px 0 0; color:var(--muted); font-size:0.8rem; letter-spacing:0.5px;}
+
+  main{flex:1; padding:18px 16px 40px;}
+
+  .breadcrumb{display:flex; align-items:center; gap:6px; font-size:0.72rem; color:var(--muted); margin-bottom:14px; text-transform:uppercase; letter-spacing:0.5px; flex-wrap:wrap;}
+  .breadcrumb .crumb{cursor:pointer;}
+  .breadcrumb .crumb:hover, .breadcrumb .crumb.active{color:var(--ember-bright);}
+  .breadcrumb .sep{color:var(--card-border);}
+
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:6px;}
+  .tile{
+    background: linear-gradient(160deg, var(--card), #100e0b);
+    border:1px solid var(--card-border); border-radius:10px; padding:18px 14px;
+    text-align:left; cursor:pointer; display:flex; flex-direction:column; gap:10px;
+    transition: transform .15s ease, border-color .15s ease; position:relative; overflow:hidden;
+  }
+  .tile:active{transform:scale(0.97);}
+  .tile:hover{border-color: rgba(232,89,12,0.5);}
+  .tile .icon{font-size:1.6rem; filter: drop-shadow(0 0 8px rgba(232,89,12,0.4));}
+  .tile .label{font-family:'Cinzel',serif; font-size:0.95rem; font-weight:700; line-height:1.25;}
+  .tile .sub{font-size:0.72rem; color:var(--muted); line-height:1.3;}
+
+  .sublist{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px;}
+  .sublist li{
+    background:var(--card); border:1px solid var(--card-border); border-radius:8px;
+    padding:14px; display:flex; align-items:center; justify-content:space-between; gap:12px;
+    cursor:pointer; transition: border-color .15s ease;
+  }
+  .sublist li:active{border-color: rgba(232,89,12,0.5);}
+  .sublist li .left{display:flex; align-items:center; gap:12px;}
+  .sublist li .emoji{font-size:1.2rem; filter: drop-shadow(0 0 6px rgba(232,89,12,0.3));}
+  .sublist li .name{font-weight:600; font-size:0.9rem; display:flex; align-items:center; flex-wrap:wrap;}
+  .sublist li .hint{font-size:0.72rem; color:var(--muted); margin-top:2px;}
+  .sublist li .chevron{color:var(--muted); font-size:0.9rem;}
+
+  .view h2{font-family:'Cinzel',serif; font-size:1.25rem; margin:0 0 4px; color:var(--ember-bright); border-bottom: 1px solid var(--card-border); padding-bottom:10px;}
+
+  .section-label{font-size:0.7rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); margin:20px 0 8px; display:flex; align-items:center; gap:8px;}
+  .section-label::before{content:"◆"; color:var(--ember); font-size:0.6rem;}
+
+  .checklist{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px;}
+  .checklist li{background:var(--card); border:1px solid var(--card-border); border-radius:8px; padding:12px 14px; display:flex; align-items:flex-start; gap:12px; cursor:pointer; font-size:0.9rem; line-height:1.4;}
+  .checkmark{width:20px; height:20px; min-width:20px; border-radius:50%; border:2px solid var(--muted); margin-top:1px; display:flex; align-items:center; justify-content:center; font-size:0.7rem; transition: all .15s ease;}
+  .checklist li.done .checkmark{background:var(--ember); border-color:var(--ember); color:#0a0908;}
+  .checklist li.done{border-color: rgba(232,89,12,0.4); opacity:0.75;}
+  .checklist li.done span.txt{text-decoration:line-through; text-decoration-color:var(--muted);}
+
+  .action{background:var(--card); border:1px solid var(--card-border); border-radius:8px; padding:14px; margin-bottom:10px;}
+  .action .title{font-weight:600; font-size:0.92rem; display:flex; justify-content:space-between; align-items:center; gap:8px;}
+  .action .cost{font-family:'Cinzel',serif; font-size:0.72rem; color:var(--ember-bright); border:1px solid rgba(232,89,12,0.4); padding:2px 8px; border-radius:12px; white-space:nowrap;}
+  .action .desc{font-size:0.82rem; color:var(--muted); margin-top:6px; line-height:1.4;}
+
+  table{width:100%; border-collapse:collapse; font-size:0.85rem;}
+  th{text-align:left; color:var(--muted); font-weight:600; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px; padding:8px 6px; border-bottom:1px solid var(--card-border);}
+  td{padding:10px 6px; border-bottom:1px solid var(--card-border);}
+  td.souls{color:var(--ember-bright); font-family:'Cinzel',serif; white-space:nowrap;}
+
+  .note{background: rgba(232,89,12,0.06); border-left:3px solid var(--ember); padding:12px 14px; font-size:0.82rem; color:var(--bone); border-radius:0 6px 6px 0; margin-top:16px; line-height:1.5;}
+  .note strong{color:var(--ember-bright);}
+  .note.warn{background: rgba(138,44,44,0.1); border-left-color:var(--danger);}
+  .note.warn strong{color:#e08a8a;}
+
+  .flow{display:flex; flex-direction:column; gap:0;}
+  .flow-step{display:flex; gap:12px; padding:10px 0; border-bottom:1px dashed var(--card-border);}
+  .flow-step:last-child{border-bottom:none;}
+  .flow-num{font-family:'Cinzel',serif; color:var(--ember); font-weight:700; font-size:0.85rem; width:22px; min-width:22px;}
+  .flow-text{font-size:0.87rem; line-height:1.45;}
+  .flow-text b{color:var(--bone);}
+
+  .die{display:inline-flex; align-items:center; justify-content:center; min-width:22px; height:22px; padding:0 4px; border-radius:5px; font-family:'Cinzel',serif; font-weight:700; font-size:0.75rem; color:#fff; margin:0 2px; vertical-align:middle; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);}
+  .die-noir{background:#2b2620;}
+  .die-bleu{background:#2a5c8a;}
+  .die-orange{background:#c9622a;}
+  .die-vert{background:#3f7d4a;}
+
+  .mode-toggle{display:flex; gap:6px; margin-bottom:16px; background:var(--card); border:1px solid var(--card-border); border-radius:10px; padding:4px;}
+  .mode-btn{flex:1; background:none; border:none; color:var(--muted); font-family:'Cinzel',serif; font-size:0.85rem; font-weight:700; padding:10px 8px; border-radius:8px; cursor:pointer; transition: all .15s ease;}
+  .mode-btn small{display:block; font-family:'Inter'; font-weight:500; font-size:0.65rem; letter-spacing:0.3px; margin-top:2px; opacity:0.8;}
+  .mode-btn.active{background:var(--ember); color:#0a0908;}
+
+  .version-chip{display:inline-flex; align-items:center; font-family:'Cinzel',serif; font-size:0.68rem; font-weight:700; letter-spacing:0.5px; padding:2px 8px; border-radius:10px; margin-left:auto;}
+  .version-chip.v1{color:var(--muted); border:1px solid var(--card-border);}
+  .version-chip.v2{color:var(--ember-bright); border:1px solid rgba(232,89,12,0.5); background:rgba(232,89,12,0.08);}
+
+  .tag-v2{display:inline-block; font-family:'Cinzel',serif; font-size:0.6rem; font-weight:700; letter-spacing:0.3px; color:var(--ember-bright); border:1px solid rgba(232,89,12,0.5); background:rgba(232,89,12,0.08); padding:1px 6px; border-radius:8px; margin-left:6px; vertical-align:middle;}
+
+  .house-badge{display:inline-block; font-family:'Cinzel',serif; font-size:0.7rem; letter-spacing:0.5px; color:var(--ember-bright); border:1px solid rgba(232,89,12,0.5); background:rgba(232,89,12,0.1); padding:4px 10px; border-radius:12px; margin-bottom:14px;}
+
+  .stat-pair{display:flex; gap:10px; margin-top:12px;}
+  .stat-box{flex:1; background:var(--card); border:1px solid var(--card-border); border-radius:8px; padding:12px; text-align:center;}
+  .stat-box .lbl{font-size:0.68rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted);}
+  .stat-box .val{font-family:'Cinzel',serif; font-size:1.1rem; color:var(--ember-bright); margin-top:4px;}
+</style>
+</head>
+<body>
+
+<div id="embers"></div>
+
+<div class="app">
+  <header>
+    <div class="glow"></div>
+    <h1>DARK SOULS</h1>
+    <p>The Board Game</p>
+  </header>
+
+  <main id="main"></main>
+</div>
+
+<script>
+const THEMES = {
+  setup: { label: "Mise en place", icon: "🗺️", sub: "Checklist avant de jouer", type: "direct" },
+  bonfire: { label: "Feu de camp", icon: "🔥", sub: "Actions disponibles", type: "direct" },
+  shop: { label: "Objets & âmes", icon: "🛡️", sub: "Coûts en âmes", type: "direct" },
+  combat: {
+    label: "Rencontres", icon: "⚔️", sub: "Combat, décor, ressources…",
+    type: "categories",
+    categories: {
+      deroulement: {
+        label: "Déroulement", icon: "🔄", hint: "Exploration, tours, fin de rencontre",
+        children: {
+          exploration: { label: "Exploration", emoji: "🚪", hint: "Tuiles, Brume Portail" },
+          tour: { label: "Déroulement des tours", emoji: "🔄", hint: "Qui joue quand, énergie gagnée" },
+          fin: { label: "Fin de rencontre", emoji: "🏁", hint: "Victoire, défaite, âmes perdues" }
+        }
+      },
+      actions: {
+        label: "Actions", icon: "👣", hint: "Déplacements, aggro, push, ressources",
+        children: {
+          deplacements: { label: "Déplacements", emoji: "👣", hint: "Marcher, courir, esquiver" },
+          aggro: { label: "Aggro", emoji: "☠️", hint: "Qui les ennemis ciblent" },
+          push: { label: "Push", emoji: "🌀", hint: "Poussée de figurine" },
+          ressources: { label: "Action Héroïque / Chance / Estus", emoji: "✨", hint: "Utiliser ses ressources en rencontre" }
+        }
+      },
+      resolution: {
+        label: "Jets & résolution", icon: "🎲", hint: "Dés, portée, esquive, endurance",
+        children: {
+          des: { label: "Les dés", emoji: "🎲", hint: "Noir, bleu, orange, vert" },
+          portee: { label: "Portée", emoji: "📏", hint: "0 / 1 / 2 / ∞" },
+          esquive: { label: "Parade / Esquive", emoji: "🛡️", hint: "Réduire ou éviter les dégâts" },
+          endurance: { label: "Endurance / dégâts", emoji: "💥", hint: "La barre unique Énergie-Vie" }
+        }
+      },
+      decor: {
+        label: "Décor & états", icon: "📦", hint: "Coffres, pièges, tonneaux, conditions",
+        children: {
+          decor: { label: "Coffres & pièges", emoji: "📦", hint: "Bloquent, se déclenchent" },
+          tonneaux: { label: "Tonneaux", emoji: "🛢️", hint: "Bloquent, se détruisent" },
+          steles: { label: "Stèles", emoji: "🪨", hint: "Bloquent, révèlent le boss" },
+          etats: { label: "États négatifs", emoji: "🩸", hint: "Saignement, poison, gelure, fléchir" }
+        }
+      }
+    }
+  }
+};
+
+// ---------- RÈGLES MAISON (V2, d'après le guide communautaire non-officiel) ----------
+// Clé = nom du thème direct ("setup", "bonfire", "shop")
+// ou "theme:sous-fiche" pour les fiches dans Rencontres (ex. "combat:push")
+// Valeur = texte (paragraphes séparés par une ligne vide) qui REMPLACE le texte officiel en mode Maison.
+// Laisser une fiche absente = pas de version maison, le texte officiel reste affiché même en mode Maison.
+const HOUSE_RULES = {
+
+  "combat:tour": `
+      <div class="section-label">Qui joue en premier ?</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Une rencontre commence toujours par l'activation de <b>tous les ennemis</b>, avant le premier personnage.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Ensuite l'ordre alterne : <b>Ennemis → 1 personnage → Ennemis → 1 personnage</b>… jusqu'à ce que tous les personnages soient passés, puis ça recommence.</div></div>
+      </div>
+      <div class="section-label">Quel personnage commence ?</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Pas de jeton Première Activation en V2 : à <b>chaque nouvelle</b> rencontre, les joueurs choisissent librement quel personnage active en premier.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Ensuite, l'ordre suit le <b>sens horaire</b> autour de la table, comme en V1.</div></div>
+      </div>
+      <div class="section-label">Au début de ton activation</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Tu gagnes <b>3 Énergies</b> (au lieu de 2 en V1).</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Tu reçois le jeton <b>Aggro</b>, et tu peux échanger des objets entre ta position de secours et tes emplacements main.</div></div>
+      </div>
+      <div class="note"><strong>Nouveau en V2</strong> : pendant l'activation d'un <b>autre</b> personnage, chaque personnage peut se déplacer de 1 repère gratuitement (mouvement d'Upkeep), sans dépenser d'Énergie.</div>`,
+
+  "combat:esquive": `
+      <div class="action">
+        <div class="title">Défense en un seul jet</div>
+        <div class="desc">Au lieu de choisir entre Esquiver ou Parade/Résistance, lance <b>tous tes dés de défense en même temps</b> : dés <span class="die die-vert">●</span> d'Esquive + dés <span class="die die-noir">●</span>/<span class="die die-bleu">●</span> de Parade/Résistance de ton équipement.</div>
+      </div>
+      <div class="action">
+        <div class="title">Lecture du résultat</div>
+        <div class="desc">Si le nombre d'icônes Esquive obtenu égale ou dépasse la difficulté d'esquive de l'attaque : <b>0 dégât, non touché</b>. Sinon, applique le résultat de Parade/Résistance normalement pour réduire les dégâts restants.</div>
+      </div>
+      <div class="action">
+        <div class="title">Coût en Énergie changé</div>
+        <div class="desc">L'Esquive ne coûte 1 Énergie que si elle a <b>réussi ET</b> que tu choisis de te déplacer d'un repère. Une tentative ratée, ou une esquive réussie sans déplacement, ne coûte rien.</div>
+      </div>`,
+
+  "combat:endurance": `
+      <p style="color:var(--muted); font-size:0.82rem; margin:8px 0 4px;">La barre fonctionne comme en V1, avec un léger sursis avant la mort.</p>
+      <div class="stat-pair">
+        <div class="stat-box"><div class="lbl">Énergie dépensée</div><div class="val">Cube noir</div></div>
+        <div class="stat-box"><div class="lbl">Dégât subi</div><div class="val">Cube rouge</div></div>
+      </div>
+      <div class="flow" style="margin-top:16px;">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Énergie dépensée → cube <b>noir</b> depuis la gauche ; dégât subi → cube <b>rouge</b> depuis la droite. Comme en V1.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Changement V2 : remplir exactement les 10 cases <b>ne tue pas encore</b>. Le personnage meurt seulement s'il faut placer un cube <b>supplémentaire</b> alors que la barre est déjà pleine.</div></div>
+      </div>`,
+
+  "bonfire": `
+      <div class="section-label">André le Forgeron</div>
+      <div class="action">
+        <div class="title">Changer / améliorer l'équipement <span class="cost" style="color:var(--muted); border-color:var(--card-border);">Gratuit</span></div>
+        <div class="desc">Fonctionne comme en V1, sans changement.</div>
+      </div>
+      <div class="action">
+        <div class="title">Acheter des trésors <span class="cost">1 âme / carte</span></div>
+        <div class="desc">Changé en V2 : après un repos, piochez <b>4 cartes</b> du paquet de trésor. Achetez-en autant que vous voulez à 1 âme chacune — les cartes non achetées retournent sous la pile.</div>
+      </div>
+
+      <div class="section-label">La Gardienne du Feu</div>
+      <div class="action">
+        <div class="title">Monter de niveau <span class="cost">2 / 4 / 8 âmes</span></div>
+        <div class="desc">Mêmes coûts qu'en V1, par palier et par caractéristique.</div>
+      </div>
+      <div class="action">
+        <div class="title">Récupérer la Chance <span class="cost">1 âme</span></div>
+        <div class="desc">Inchangé par rapport à V1.</div>
+      </div>
+
+      <div class="section-label">Visiter le feu de camp</div>
+      <div class="note warn"><strong>Changement majeur</strong> : visiter le feu de camp entre les rencontres coûte désormais <b>1 étincelle</b> (au lieu d'être gratuit en V1) — que ce soit pour un simple repos, ou pour aller voir André ou la Gardienne.</div>
+      <div class="note">Le reste du repos fonctionne comme en V1 : Estus rechargés, jetons Action Héroïque/Chance disponibles, cartes Rencontre réinitialisées.</div>`,
+
+  "combat:fin": `
+      <div class="section-label">Victoire</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Rencontre normale : <b>+2 âmes par personnage</b>, comme en V1.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Rencontre Boss : changement V2 — le groupe ne récupère <b>plus toutes</b> ses étincelles, il gagne seulement <b>+1 étincelle</b>.</div></div>
+      </div>
+      <div class="section-label">Défaite (un personnage meurt)</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Fonctionne comme en V1 : le groupe est vaincu, les âmes tombent sur la tuile où il est mort.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Un personnage doit se déplacer dessus pour les récupérer — s'il meurt avant, elles sont <b>défaussées définitivement</b>.</div></div>
+      </div>
+      <div class="note warn"><strong>Pas d'échappatoire</strong> : une fois lancé dans une rencontre, le groupe ne peut pas la quitter avant victoire ou défaite complète.</div>`,
+
+  "combat:tonneaux": `
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Changement V2 : un tonneau est <b>détruit automatiquement</b> dès qu'une figurine se déplace sur son repère — plus besoin de dépenser 1 Énergie supplémentaire comme en V1.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Nouveau bonus : si un tonneau <b>survit intact</b> jusqu'à la fin de la rencontre (jamais traversé), il rapporte des âmes égales au résultat d'un jet de <span class="die die-noir">●</span> dé noir.</div></div>
+      </div>`,
+
+  "combat:etats": `
+      <p style="color:var(--muted); font-size:0.82rem; margin:8px 0 14px;">Seule la Gelure change en V2 ; Saignement, Poison et Fléchir restent identiques à la V1.</p>
+      <div class="action">
+        <div class="title">🩸 Saignement</div>
+        <div class="desc">Au prochain dégât subi, +2 dégâts supplémentaires, puis le jeton est retiré.</div>
+      </div>
+      <div class="action">
+        <div class="title">☠️ Poison</div>
+        <div class="desc">À la fin de chaque activation de la figurine, elle subit 1 dégât tant qu'elle porte le jeton.</div>
+      </div>
+      <div class="action">
+        <div class="title">❄️ Gelure <span class="cost">Changé en V2</span></div>
+        <div class="desc">Le personnage récupère <b>1 Énergie de moins</b> au début de son activation, au lieu de payer 1 Énergie supplémentaire pour marcher/courir/esquiver comme en V1.</div>
+      </div>
+      <div class="action">
+        <div class="title">➡️ Fléchir</div>
+        <div class="desc">+1 Énergie pour utiliser une action d'arme. Un ennemi avec Fléchir voit ses dégâts d'attaque réduits de 1.</div>
+      </div>
+      <div class="note">Poison, Gelure et Fléchir sont retirés à la fin de l'activation de la figurine. Tous les jetons condition restants sont retirés à la fin de la rencontre.</div>`,
+
+  "combat:steles": `
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Les Stèles bloquent toujours les déplacements, comme en V1.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Effet changé : chaque stèle révèle la carte du dessus de la pile <b>Rencontre, Trésor, ou Événement</b> (au choix des joueurs) — plus seulement le comportement du boss.</div></div>
+        <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Une fois consultée, remettez la carte soit sur le <b>dessus</b>, soit sous la pile, à votre choix.</div></div>
+      </div>`,
+
+};
+
+let currentTheme = null;
+let currentCategory = null;
+let currentSubKey = null;
+let currentMode = 'official';
+
+function renderHome(){
+  currentTheme = null; currentCategory = null; currentSubKey = null;
+  let html = `<div class="mode-toggle">
+    <button class="mode-btn ${currentMode==='official'?'active':''}" onclick="setMode('official')">V1<small>Édition 2017</small></button>
+    <button class="mode-btn ${currentMode==='house'?'active':''}" onclick="setMode('house')">V2<small>Sunless City & co</small></button>
+  </div>`;
+  html += `<div class="grid">`;
+  for(const key in THEMES){
+    const t = THEMES[key];
+    const tag = hasHouseRule(key) ? `<span class="tag-v2">V2</span>` : '';
+    html += `
+      <div class="tile" onclick="openTheme('${key}')">
+        <div class="icon">${t.icon}</div>
+        <div class="label">${t.label}${tag}</div>
+        <div class="sub">${t.sub}</div>
+      </div>`;
+  }
+  html += `</div>`;
+  document.getElementById('main').innerHTML = html;
+}
+
+function hasHouseRule(ficheKey){
+  return !!HOUSE_RULES[ficheKey];
+}
+
+function setMode(m){
+  currentMode = m;
+  renderHome();
+}
+
+function renderBreadcrumb(theme, category, sub){
+  let html = `<div class="breadcrumb"><span class="crumb" onclick="renderHome()">Accueil</span>`;
+  if(theme){
+    const active = !category && !sub;
+    html += `<span class="sep">/</span><span class="crumb ${active ? 'active':''}" onclick="openTheme('${theme}')">${THEMES[theme].label}</span>`;
+  }
+  if(category){
+    const cat = THEMES[theme].categories[category];
+    const active = !sub;
+    html += `<span class="sep">/</span><span class="crumb ${active ? 'active':''}" onclick="openCategory('${theme}','${category}')">${cat.label}</span>`;
+  }
+  if(sub){
+    const label = THEMES[theme].categories[category].children[sub].label;
+    html += `<span class="sep">/</span><span class="crumb active">${label}</span>`;
+  }
+  html += `<span class="version-chip ${currentMode==='house' ? 'v2':'v1'}">${currentMode==='house' ? 'V2':'V1'}</span>`;
+  html += `</div>`;
+  return html;
+}
+
+function openTheme(key){
+  currentTheme = key; currentCategory = null; currentSubKey = null;
+  const t = THEMES[key];
+
+  if(t.type === "categories"){
+    let html = renderBreadcrumb(key, null, null);
+    html += `<h2>${t.label}</h2>`;
+    html += `<ul class="sublist">`;
+    for(const ck in t.categories){
+      const c = t.categories[ck];
+      html += `
+        <li onclick="openCategory('${key}','${ck}')">
+          <div class="left">
+            <div class="emoji">${c.icon}</div>
+            <div><div class="name">${c.label}</div><div class="hint">${c.hint}</div></div>
+          </div>
+          <div class="chevron">›</div>
+        </li>`;
+    }
+    html += `</ul>`;
+    document.getElementById('main').innerHTML = html;
+    return;
+  }
+
+  const breadcrumb = renderBreadcrumb(key, null, null);
+  renderFicheContainer(key, breadcrumb, renderDirectContent(key), t.label);
+}
+
+function openCategory(theme, category){
+  currentTheme = theme; currentCategory = category; currentSubKey = null;
+  const cat = THEMES[theme].categories[category];
+  let html = renderBreadcrumb(theme, category, null);
+  html += `<h2>${cat.label}</h2>`;
+  html += `<ul class="sublist">`;
+  for(const sk in cat.children){
+    const s = cat.children[sk];
+    const tag = hasHouseRule(theme+':'+sk) ? `<span class="tag-v2">V2</span>` : '';
+    html += `
+      <li onclick="openSub('${theme}','${category}','${sk}')">
+        <div class="left">
+          <div class="emoji">${s.emoji}</div>
+          <div><div class="name">${s.label}${tag}</div><div class="hint">${s.hint}</div></div>
+        </div>
+        <div class="chevron">›</div>
+      </li>`;
+  }
+  html += `</ul>`;
+  document.getElementById('main').innerHTML = html;
+}
+
+function openSub(theme, category, sub){
+  currentTheme = theme; currentCategory = category; currentSubKey = sub;
+  const breadcrumb = renderBreadcrumb(theme, category, sub);
+  const ficheKey = theme + ':' + sub;
+  renderFicheContainer(ficheKey, breadcrumb, renderSubContent(theme, sub), THEMES[theme].categories[category].children[sub].label);
+}
+
+function renderFicheContainer(ficheKey, breadcrumbHtml, officialHtml, ficheLabel){
+  const houseHtml = HOUSE_RULES[ficheKey];
+  let bodyHtml;
+  if(currentMode === 'house' && houseHtml){
+    bodyHtml = `<h2>${ficheLabel} <span class="house-badge" style="margin-left:8px; vertical-align:middle;">V2</span></h2>` + houseHtml;
+  } else {
+    bodyHtml = officialHtml;
+  }
+  document.getElementById('main').innerHTML = breadcrumbHtml + bodyHtml;
+}
+
+// ---------- CONTENU : thèmes directs ----------
+function renderDirectContent(key){
+  if(key === "setup"){
+    return `
+      <h2>Mise en place</h2>
+      <p style="color:var(--muted); font-size:0.82rem; margin:8px 0 14px;">Coche au fur et à mesure que tu installes.</p>
+      <ul class="checklist" id="setup-list">
+        <li onclick="toggle(this)"><div class="checkmark">✓</div><span class="txt">Choisir un personnage par joueur : figurine, plateau, cartes équipement de départ</span></li>
+        <li onclick="toggle(this)"><div class="checkmark">✓</div><span class="txt">Poser la tuile Feu de Camp, mettre de côté les tuiles Boss Secondaire et Principal</span></li>
+        <li onclick="toggle(this)"><div class="checkmark">✓</div><span class="txt">Mélanger les 6 tuiles restantes, en poser 4 autour du feu de camp (aligner les portes)</span></li>
+        <li onclick="toggle(this)"><div class="checkmark">✓</div><span class="txt">Placer le jeton Brume Portail sur un mur libre de la tuile la plus éloignée</span></li>
+        <li onclick="toggle(this)"><div class="checkmark">✓</div><span class="txt">Régler le compteur d'Étincelles selon le nombre de joueurs (5/4/3/2 pour 1/2/3/4 joueurs)</span></li>
+        <li onclick="toggle(this)"><div class="checkmark">✓</div><span class="txt">Choisir le Boss Secondaire à affronter, mettre de côté ses éléments (figurine, santé, cartes)</span></li>
+        <li onclick="toggle(this)"><div class="checkmark">✓</div><span class="txt">Séparer les cartes Rencontre par niveau (1/2/3), en placer une face cachée sur chaque tuile (les plus faibles près du feu de camp)</span></li>
+        <li onclick="toggle(this)"><div class="checkmark">✓</div><span class="txt">Placer figurines des personnages sur la tuile Feu de Camp, avec 1 jeton Estus + 1 jeton Action Héroïque + 1 jeton Chance chacun</span></li>
+        <li onclick="toggle(this)"><div class="checkmark">✓</div><span class="txt">Placer un jeton Montée de Niveau sur chaque case de Base (Force/Dext/Int/Foi) de chaque personnage</span></li>
+        <li onclick="toggle(this)"><div class="checkmark">✓</div><span class="txt">Mélanger cartes trésor communes + trésor de classe → paquet de Trésor, sur la tuile Feu de Camp</span></li>
+        <li onclick="toggle(this)"><div class="checkmark">✓</div><span class="txt">Trier les jetons restants par type, à portée de tous</span></li>
+      </ul>
+      <div class="note"><strong>Solo</strong> : la cache d'âme démarre avec 16 âmes au lieu de 0 — il est dangereux de progresser seul.</div>
+      <div class="note"><strong>Après le Boss Secondaire</strong> : refaire les étapes tuiles + étincelles, choisir le Boss Principal, remettre en place les cartes Rencontre. Les personnages n'ont pas besoin d'être replacés (étape 5 ignorée) et le paquet de trésor s'enrichit des cartes trésor transposé + armes légendaires au lieu d'être reconstitué.</div>`;
+  }
+
+  if(key === "bonfire"){
+    return `
+      <h2>Au feu de camp</h2>
+      <div class="section-label">André le Forgeron</div>
+      <div class="action">
+        <div class="title">Acheter un trésor <span class="cost">1 âme</span></div>
+        <div class="desc">Piochez la carte du dessus du paquet de trésor et révélez-la. Un personnage qui remplit les caractéristiques peut l'équiper aussitôt ; sinon elle va dans l'inventaire. Limité par le nombre d'âmes dans la cache.</div>
+      </div>
+      <div class="action">
+        <div class="title">Changer d'équipement <span class="cost" style="color:var(--muted); border-color:var(--card-border);">Gratuit</span></div>
+        <div class="desc">Uniquement possible chez André. Échangez librement entre fiche et inventaire (1 armure + jusqu'à 3 armes) si les caractéristiques sont remplies.</div>
+      </div>
+      <div class="action">
+        <div class="title">Améliorer l'équipement <span class="cost" style="color:var(--muted); border-color:var(--card-border);">Gratuit</span></div>
+        <div class="desc"><b>Armure</b> : améliorations ajoutables/retirables librement. <b>Arme</b> : ajout possible mais jamais retirable ensuite — choix permanent.</div>
+      </div>
+
+      <div class="section-label">La Gardienne du Feu</div>
+      <div class="action">
+        <div class="title">Monter de niveau <span class="cost">2 / 4 / 8 âmes</span></div>
+        <div class="desc">Par caractéristique (Force/Dext/Int/Foi) : Base→Palier 1 = 2 âmes, Palier 1→2 = 4 âmes, Palier 2→3 = 8 âmes. Chaque perso monte individuellement.</div>
+      </div>
+      <div class="action">
+        <div class="title">Récupérer la Chance <span class="cost">1 âme</span></div>
+        <div class="desc">Retourne le jeton Chance du personnage sur le côté disponible.</div>
+      </div>
+
+      <div class="section-label">Repos autour du feu</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Baisse le compteur d'Étincelle de 1</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Toutes les Fioles d'Estus repassent pleines</div></div>
+        <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Tous les jetons Action Héroïque et Chance redeviennent disponibles</div></div>
+        <div class="flow-step"><div class="flow-num">04</div><div class="flow-text">Toutes les cartes Rencontre repassent face cachée (les ennemis réapparaissent)</div></div>
+      </div>
+      <div class="note warn"><strong>Attention</strong> : à 0 étincelle, impossible de se reposer davantage — la prochaine mort termine la partie.</div>`;
+  }
+
+  if(key === "shop"){
+    return `
+      <h2>Objets & coût en âmes</h2>
+      <table>
+        <tr><th>Action</th><th>Coût</th></tr>
+        <tr><td>Acheter un trésor (André)</td><td class="souls">1 âme</td></tr>
+        <tr><td>Améliorer une arme/armure</td><td class="souls">Gratuit</td></tr>
+        <tr><td>Changer d'équipement</td><td class="souls">Gratuit</td></tr>
+        <tr><td>Caractéristique Base → Palier 1</td><td class="souls">2 âmes</td></tr>
+        <tr><td>Caractéristique Palier 1 → 2</td><td class="souls">4 âmes</td></tr>
+        <tr><td>Caractéristique Palier 2 → 3</td><td class="souls">8 âmes</td></tr>
+        <tr><td>Récupérer un jeton Chance</td><td class="souls">1 âme</td></tr>
+      </table>
+      <div class="note"><strong>Gagner des âmes</strong> : rencontre normale gagnée = 2 âmes/perso. Rencontre Boss gagnée = 1 âme/perso × étincelles restantes au feu de camp.</div>`;
+  }
+  return "";
+}
+
+// ---------- CONTENU : sous-fiches Combat ----------
+function renderSubContent(theme, sub){
+  if(theme !== "combat") return "";
+
+  if(sub === "exploration"){
+    return `
+      <h2>Exploration</h2>
+      <div class="section-label">Se déplacer dans le donjon</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Le groupe se déplace de <b>tuile en tuile</b> à travers les portes.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Entrer sur une <b>nouvelle</b> tuile retourne sa carte Rencontre face visible : c'est le <b>début de la rencontre</b>.</div></div>
+        <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Le groupe peut se déplacer <b>librement</b> sur les tuiles dont la carte Rencontre est déjà face visible (déjà explorées/vaincues).</div></div>
+      </div>
+      <div class="section-label">Le Brume Portail</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Une fois la rencontre de la tuile avec le Brume Portail vaincue, le groupe peut soit <b>se lancer dans la rencontre Boss</b>, soit <b>continuer à explorer</b>.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">La rencontre Boss peut être déclenchée à <b>n'importe quel moment</b> hors rencontre, pas forcément tout de suite.</div></div>
+      </div>
+      <div class="note warn"><strong>Piège classique</strong> : si le groupe se repose au feu de camp après avoir passé le Brume Portail, la rencontre de <b>cette tuile précise</b> se réinitialise — il faudra la re-combattre sur le chemin du retour vers le boss.</div>`;
+  }
+
+  if(sub === "decor"){
+    return `
+      <h2>Décor</h2>
+      <div class="section-label">Coffres</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Placés face <b>fermée</b> visible, ils <b>bloquent les déplacements</b> (comme un tonneau, mais ne se détruisent pas au passage).</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Si le groupe <b>vainc la rencontre</b>, il peut ouvrir le coffre : retournez le jeton face ouverte et piochez <b>immédiatement 2 cartes</b> du paquet de trésor.</div></div>
+        <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Un personnage qui remplit les caractéristiques peut équiper aussitôt l'objet révélé ; sinon il va dans l'inventaire.</div></div>
+        <div class="flow-step"><div class="flow-num">04</div><div class="flow-text">Une fois ouvert, un coffre ne se referme <b>jamais</b> — même après un repos au feu de camp.</div></div>
+      </div>
+      <div class="section-label">Jetons Piège</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Si la carte Rencontre a une icône Piège, un jeton face cachée est placé sur <b>chaque repère de base</b>, sauf ceux adjacents à un mur avec porte.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">La <b>première fois</b> qu'un personnage se déplace sur ce repère, retournez le jeton. Vierge = rien. Sinon, il subit le dégât indiqué (ou tente d'esquiver).</div></div>
+        <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Un dégât de piège <b>ne peut jamais être bloqué</b> par la Parade — seule l'Esquive fonctionne contre un piège.</div></div>
+        <div class="flow-step"><div class="flow-num">04</div><div class="flow-text">Les pièges ne se déclenchent qu'<b>une fois</b> par rencontre et n'affectent <b>jamais les ennemis</b>.</div></div>
+      </div>`;
+  }
+
+  if(sub === "ressources"){
+    return `
+      <h2>Action Héroïque / Chance / Estus</h2>
+      <p style="color:var(--muted); font-size:0.82rem; margin:8px 0 14px;">Trois ressources à usage unique, rechargées uniquement par un repos au feu de camp.</p>
+      <div class="action">
+        <div class="title">✨ Action Héroïque</div>
+        <div class="desc">Capacité spéciale propre à chaque classe, utilisable pendant une rencontre. Une fois utilisée, le jeton passe côté "utilisé" et n'est plus disponible jusqu'au prochain repos.</div>
+      </div>
+      <div class="action">
+        <div class="title">🍀 Chance</div>
+        <div class="desc">Permet de <b>relancer un dé</b> d'un jet d'attaque, de Parade, <b>ou</b> d'Esquive. Usage unique — une fois utilisé, indisponible jusqu'au prochain repos (ou rechargeable pour 1 âme auprès de la Gardienne du Feu).</div>
+      </div>
+      <div class="action">
+        <div class="title">🧪 Fiole d'Estus</div>
+        <div class="desc">Pendant ton activation, retire <b>tous les cubes noirs ET rouges</b> de ta barre d'endurance d'un coup — recharge l'Énergie et soigne complètement en même temps. Usage unique jusqu'au prochain repos.</div>
+      </div>
+      <div class="note"><strong>Un seul de chaque</strong> : chaque personnage ne possède qu'1 jeton Action Héroïque, 1 Chance, 1 Estus — impossible d'en cumuler plusieurs.</div>`;
+  }
+
+  if(sub === "fin"){
+    return `
+      <h2>Fin de rencontre</h2>
+      <div class="section-label">Victoire</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Retirez tous les cubes noirs et rouges des barres d'endurance des personnages.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Rencontre normale : <b>+2 âmes par personnage</b> dans la cache d'âme.</div></div>
+        <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Rencontre Boss : <b>+1 âme par personnage, par étincelle restante</b> au feu de camp.</div></div>
+      </div>
+      <div class="section-label">Défaite (un personnage meurt)</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Le groupe entier est vaincu. Tous les personnages retournent sur la tuile Feu de Camp.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Tous les jetons Âme de la cache sont placés sur le repère où le personnage est mort.</div></div>
+        <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Le groupe doit se reposer au feu de camp (voir fiche Feu de camp).</div></div>
+        <div class="flow-step"><div class="flow-num">04</div><div class="flow-text">Pour récupérer ces âmes, un personnage doit se déplacer sur ce repère plus tard — s'il meurt avant, elles sont <b>défaussées définitivement</b>.</div></div>
+      </div>
+      <div class="note warn"><strong>Pas d'échappatoire</strong> : une fois lancé dans une rencontre, le groupe ne peut pas la quitter avant victoire ou défaite complète.</div>
+      <div class="note"><strong>Jeton Première Activation</strong> : quelle que soit l'issue, il est donné au joueur qui aurait dû activer son personnage ensuite — il ouvrira la prochaine rencontre.</div>`;
+  }
+
+  if(sub === "des"){
+    return `
+      <h2>Les dés</h2>
+      <p style="color:var(--muted); font-size:0.82rem; margin:8px 0 14px;">4 couleurs, chaque carte équipement/ennemi indique lesquels lancer.</p>
+      <div class="action">
+        <div class="title"><span class="die die-noir">●</span> Dé noir</div>
+        <div class="desc">Le plus courant. Utilisé pour la majorité des attaques de base et les jets de Parade.</div>
+      </div>
+      <div class="action">
+        <div class="title"><span class="die die-bleu">●</span> Dé bleu</div>
+        <div class="desc">Attaques renforcées ou magiques, et jets de Résistance.</div>
+      </div>
+      <div class="action">
+        <div class="title"><span class="die die-orange">●</span> Dé orange</div>
+        <div class="desc">Le plus rare (2 seulement) — grosses attaques, souvent côté ennemis/boss.</div>
+      </div>
+      <div class="action">
+        <div class="title"><span class="die die-vert">●</span> Dé vert</div>
+        <div class="desc">Dédié à l'Esquive uniquement — jamais utilisé pour attaquer.</div>
+      </div>
+      <div class="note"><strong>Lecture d'une carte</strong> : le nombre et la couleur des dés à côté d'une action d'équipement indiquent exactement quoi lancer, ex. <span class="die die-noir">2</span> = lancer deux dés noirs.</div>`;
+  }
+
+  if(sub === "portee"){
+    return `
+      <h2>Portée</h2>
+      <p style="color:var(--muted); font-size:0.82rem; margin:8px 0 14px;">Distance maximale mesurée en repères, entre attaquant et cible.</p>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">0</div><div class="flow-text">La cible doit être sur <b>le même repère</b> que l'attaquant.</div></div>
+        <div class="flow-step"><div class="flow-num">1</div><div class="flow-text">La cible doit être sur un repère <b>adjacent</b>.</div></div>
+        <div class="flow-step"><div class="flow-num">2</div><div class="flow-text">La cible peut être séparée par <b>deux</b> repères (et ainsi de suite pour les portées plus élevées).</div></div>
+        <div class="flow-step"><div class="flow-num">∞</div><div class="flow-text">Portée <b>illimitée</b> — peut affecter n'importe quelle figurine de la rencontre.</div></div>
+      </div>
+      <div class="note"><strong>Bon à savoir</strong> : certaines options d'arme remplacent la portée de base de l'équipement (indiqué directement sur l'action). Les arcs et armes d'hast (icône flèche) ne peuvent généralement pas être utilisés à Portée 0.</div>`;
+  }
+
+  if(sub === "etats"){
+    return `
+      <h2>États négatifs</h2>
+      <p style="color:var(--muted); font-size:0.82rem; margin:8px 0 14px;">Une figurine ne peut porter qu'un seul jeton de chaque condition à la fois.</p>
+      <div class="action">
+        <div class="title">🩸 Saignement</div>
+        <div class="desc">Au <b>prochain dégât subi</b>, +2 dégâts supplémentaires. Le jeton est ensuite retiré (effet unique, se déclenche une fois puis disparaît).</div>
+      </div>
+      <div class="action">
+        <div class="title">☠️ Poison</div>
+        <div class="desc">À la <b>fin de chaque activation</b> de la figurine, elle subit 1 dégât tant qu'elle porte le jeton.</div>
+      </div>
+      <div class="action">
+        <div class="title">❄️ Gelure</div>
+        <div class="desc"><b>Personnage</b> : +1 Énergie à chaque marche/course/esquive. <b>Ennemi</b> : sa valeur de déplacement est réduite de 1.</div>
+      </div>
+      <div class="action">
+        <div class="title">➡️ Fléchir</div>
+        <div class="desc"><b>Personnage</b> : +1 Énergie pour utiliser une action d'arme. <b>Ennemi</b> : ses valeurs de dégâts d'attaque sont réduites de 1.</div>
+      </div>
+      <div class="note"><strong>Quand ça part</strong> : Poison, Gelure et Fléchir sont retirés à la <b>fin de l'activation</b> de la figurine qui les porte. Tous les jetons condition restants sont aussi retirés à la <b>fin de la rencontre</b>.</div>
+      <div class="note"><strong>Ordre d'application</strong> : le livret V1 ne précise pas explicitement l'ordre entre dégâts et conditions. La clarification officielle des développeurs (reprise dans les éditions suivantes) : <b>résoudre les dégâts d'abord</b> (y compris le bonus d'un Saignement déjà présent), <b>puis</b> appliquer les nouvelles conditions de l'attaque — même si l'attaque a fait 0 dégât. Ex. : une figurine déjà en Saignement touchée par une nouvelle attaque qui inflige aussi Saignement subit d'abord le +2 de l'ancien jeton (qui est ensuite retiré), puis reçoit le nouveau jeton Saignement.</div>`;
+  }
+
+  if(sub === "aggro"){
+    return `
+      <h2>Aggro</h2>
+      <p style="color:var(--muted); font-size:0.82rem; margin:8px 0 4px;">Le jeton Aggro détermine qui les ennemis visent en priorité.</p>
+      <div class="section-label">Qui le porte ?</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Au début d'une rencontre, il est placé sur le personnage choisi pour <b>ouvrir la voie</b>.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Il <b>change de porteur à chaque activation</b> : dès qu'un personnage commence son activation, il reçoit automatiquement le jeton Aggro.</div></div>
+      </div>
+      <div class="section-label">Comment les ennemis ciblent</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Certaines attaques/déplacements ciblent <b>directement</b> le personnage avec l'Aggro, quelle que soit sa position (sous réserve d'être à portée).</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">D'autres ciblent le personnage <b>le plus proche</b>. En cas d'égalité de distance entre plusieurs personnages, l'ennemi cible celui qui a l'<b>Aggro</b>.</div></div>
+        <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Si le porteur de l'Aggro n'est pas parmi les plus proches à égalité, l'ennemi cible plutôt le personnage avec le plus haut <b>niveau de Provocation</b> (indiqué sur la fiche perso).</div></div>
+        <div class="flow-step"><div class="flow-num">04</div><div class="flow-text">Si aucun personnage n'est à portée, l'attaque échoue simplement — sans effet.</div></div>
+      </div>
+      <div class="note"><strong>Astuce tactique</strong> : comme l'Aggro change à chaque activation, c'est souvent la figurine qui vient de jouer (donc probablement déjà positionnée agressivement) qui devient la cible prioritaire du tour ennemi suivant.</div>`;
+  }
+
+  if(sub === "deplacements"){
+    return `
+      <h2>Déplacements</h2>
+      <p style="color:var(--muted); font-size:0.82rem; margin:8px 0 4px;">Trois façons de bouger pendant une activation.</p>
+      <div class="action">
+        <div class="title">Marcher <span class="cost" style="color:var(--muted); border-color:var(--card-border);">0 Énergie</span></div>
+        <div class="desc"><b>Une seule fois</b> par activation : déplacement de 1 repère, gratuit.</div>
+      </div>
+      <div class="action">
+        <div class="title">Courir <span class="cost">1 Énergie</span></div>
+        <div class="desc">Un <b>nombre illimité</b> de fois par activation : chaque déplacement de 1 repère coûte 1 Énergie.</div>
+      </div>
+      <div class="action">
+        <div class="title">Esquiver <span class="cost">1 Énergie</span></div>
+        <div class="desc">Uniquement pendant l'activation d'un <b>ennemi</b>, quand tu es attaqué : déplacement de 1 repère + jet de dés d'esquive (voir fiche Parade/Esquive). Une esquive réussie = 0 dégât et non touché.</div>
+      </div>
+      <div class="section-label">À retenir</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Tu peux te déplacer <b>avant ou après</b> ton attaque, mais pas les deux (un seul "moment" de déplacement par activation, potentiellement en plusieurs pas).</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Un déplacement de <b>poussée</b> (subi, pas choisi) ne coûte jamais d'Énergie — voir fiche Push.</div></div>
+        <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Certaines conditions augmentent le coût : <b>Gelure</b> ajoute 1 Énergie à chaque marche/course/esquive ; un tonneau sur le chemin ajoute aussi 1 Énergie pour le traverser (et le détruit).</div></div>
+      </div>`;
+  }
+
+  if(sub === "tour"){
+    return `
+      <h2>Déroulement des tours</h2>
+      <div class="section-label">Qui joue en premier ?</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Une rencontre commence <b>toujours par les ennemis</b> qui s'activent, avant le premier personnage.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Ensuite l'ordre alterne : <b>Ennemis → 1 personnage → Ennemis → 1 personnage</b>… jusqu'à ce que tous les personnages soient passés, puis ça recommence.</div></div>
+        <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Tout au long d'une rencontre, un <b>seul</b> personnage s'active à la fois — jamais deux d'affilée.</div></div>
+      </div>
+
+      <div class="section-label">Quel personnage commence ?</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">À la <b>toute première</b> rencontre de la partie, les joueurs choisissent librement quel personnage s'active en premier.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Ensuite, l'ordre des personnages suit le <b>sens horaire</b> autour de la table.</div></div>
+        <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">À chaque <b>nouvelle</b> rencontre, le premier personnage à s'activer est celui qui aurait dû jouer ensuite si la rencontre précédente avait continué (peu importe victoire ou défaite) — repérez-le avec le jeton <b>Première Activation</b>.</div></div>
+      </div>
+
+      <div class="section-label">Ordre des ennemis entre eux</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Toutes les figurines ennemies s'activent <b>ensemble</b> à chaque "tour ennemi", mais dans un ordre précis.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Elles s'activent du <b>niveau de Menace le plus haut au plus bas</b>. À menace égale, les joueurs choisissent l'ordre.</div></div>
+      </div>
+
+      <div class="section-label">Au début de ton activation</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Tu gagnes <b>2 Énergies</b> (retire jusqu'à 2 cubes noirs de ta barre d'endurance).</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Tu reçois le jeton <b>Aggro</b> (les ennemis te cibleront en priorité, voir fiche Attaques).</div></div>
+        <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Tu peux échanger librement des objets entre ta <b>position de secours</b> et tes emplacements main.</div></div>
+        <div class="flow-step"><div class="flow-num">04</div><div class="flow-text">Puis tu peux te déplacer et/ou attaquer (une seule fois chaque, dans l'ordre de ton choix), avant que ton activation se termine.</div></div>
+      </div>
+      <div class="note"><strong>Énergie non dépensée</strong> : elle ne se garde pas pour le tour suivant au-delà de ce qui est déjà retiré de la barre — chaque activation te redonne simplement 2 Énergies de plus (jusqu'à ce que la barre soit pleine de cubes rouges de dégâts, auquel cas le gain est perdu).</div>`;
+  }
+
+  if(sub === "push"){
+    return `
+      <h2>Push</h2>
+      <div class="section-label">Principe de base</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Un <b>déplacement de poussée ne coûte pas d'Énergie</b>.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">La figurine poussée par une <b>attaque</b> est déplacée sur le repère adjacent <b>le plus éloigné</b> de l'attaquant, au choix des joueurs.</div></div>
+        <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Si l'icône Poussée apparaît sur le <b>déplacement</b> d'un ennemi : chaque personnage sur le repère où l'ennemi arrive est poussé sur un repère adjacent au choix des joueurs — et ce à <b>chaque repère traversé</b> si l'ennemi se déplace de plusieurs cases.</div></div>
+      </div>
+      <div class="section-label">Boss</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Une figurine <b>Boss ne peut pas être poussée</b> par l'attaque ou le déplacement d'un personnage.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Un Boss peut uniquement être poussé par un <b>autre Boss</b> qui se déplace sur son repère (rencontres à plusieurs Boss).</div></div>
+        <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Tous les <b>sauts</b> de Boss possèdent l'icône Poussée : les personnages sur le chemin peuvent être poussés sur n'importe quel repère adjacent, sans être liés à un arc particulier.</div></div>
+      </div>
+      <div class="note"><strong>Limite de figurines</strong> : un repère ne peut contenir plus de 3 figurines (1 seule pour un Boss). Si une figurine arrive sur un repère plein, il faut pousser une figurine déjà présente.</div>`;
+  }
+
+  if(sub === "tonneaux"){
+    return `
+      <h2>Tonneaux</h2>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Les Tonneaux <b>bloquent les déplacements et les poussées</b> tant qu'ils sont intacts.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Un personnage peut marcher, courir ou esquiver sur un repère avec un tonneau, mais doit dépenser <b>1 Énergie supplémentaire</b> pour ce faire.</div></div>
+        <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Ce faisant, le tonneau est <b>détruit</b> (retournez le jeton face détruite) : il ne bloque plus rien pour le reste de la rencontre.</div></div>
+        <div class="flow-step"><div class="flow-num">04</div><div class="flow-text">À la fin de la rencontre, tous les tonneaux repassent face intacte visible, au cas où la rencontre serait rejouée.</div></div>
+      </div>`;
+  }
+
+  if(sub === "steles"){
+    return `
+      <h2>Stèles</h2>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Les Stèles <b>bloquent les déplacements</b> — elles ne se détruisent jamais (contrairement aux tonneaux).</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Au début d'une <b>rencontre Boss</b>, le groupe révèle au hasard une carte de Comportement du Boss pour chaque stèle présente sur une tuile dont la carte Rencontre est face visible.</div></div>
+        <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">C'est donc un indice tactique : plus vous avez exploré de tuiles avec stèles, plus vous connaissez le comportement du boss avant de l'affronter.</div></div>
+      </div>`;
+  }
+
+  if(sub === "endurance"){
+    return `
+      <h2>Endurance / dégâts</h2>
+      <p style="color:var(--muted); font-size:0.82rem; margin:8px 0 4px;">Une seule barre de 10 cases sert à la fois d'Énergie et de Vie.</p>
+      <div class="stat-pair">
+        <div class="stat-box"><div class="lbl">Énergie dépensée</div><div class="val">Cube noir</div></div>
+        <div class="stat-box"><div class="lbl">Dégât subi</div><div class="val">Cube rouge</div></div>
+      </div>
+      <div class="flow" style="margin-top:16px;">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Énergie dépensée → cube <b>noir</b>, placé en partant de la <b>gauche</b>.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Dégât subi → cube <b>rouge</b>, placé en partant de la <b>droite</b>.</div></div>
+        <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Si les <b>10 cases sont remplies</b>, le personnage est tué et le groupe est immédiatement vaincu.</div></div>
+        <div class="flow-step"><div class="flow-num">04</div><div class="flow-text">Gagner de l'Énergie/Vie retire des cubes correspondants ; si aucun cube à retirer, le gain est perdu.</div></div>
+      </div>
+      <div class="note"><strong>Fiole d'Estus</strong> : retire tous les cubes noirs et rouges d'un coup (usage unique jusqu'au prochain repos au feu).</div>`;
+  }
+
+  if(sub === "esquive"){
+    return `
+      <h2>Parade / Esquive</h2>
+      <div class="section-label">Deux façons de se défendre</div>
+      <div class="action">
+        <div class="title">Parade / Résistance</div>
+        <div class="desc">Réduit les dégâts sans les annuler forcément. Lancez les dés <span class="die die-noir">●</span>/<span class="die die-bleu">●</span> indiqués par les icônes Parade (physique) ou Résistance (magique) de votre équipement, soustrayez le total à la force de l'attaque. Si le lancer égale ou dépasse l'attaque : 0 dégât.</div>
+      </div>
+      <div class="action">
+        <div class="title">Esquive</div>
+        <div class="desc">Tout ou rien — remplace le jet de Parade/Résistance. Coûte 1 Énergie, permet de se déplacer de 1 repère. Lancez vos dés <span class="die die-vert">●</span> : si le nombre d'icônes Esquive obtenu égale/dépasse la difficulté d'esquive, 0 dégât <b>et</b> non touché (pas de poussée, pas de condition). Sinon : dégâts complets.</div>
+      </div>
+      <div class="note"><strong>Touché ≠ dégât</strong> : même à 0 dégât grâce à la Parade, un personnage reste "touché" et peut être poussé ou subir une condition. Seule une esquive réussie évite complètement d'être touché.</div>`;
+  }
+  return "";
+}
+
+function toggle(el){ el.classList.toggle('done'); }
+
+renderHome();
+
+if('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => { /* pas grave, l'app fonctionne quand même en ligne */ });
+  });
+}
+
+const container = document.getElementById('embers');
+for(let i=0;i<18;i++){
+  const p = document.createElement('div');
+  p.className = 'ember-particle';
+  const left = Math.random()*100;
+  const dur = 6 + Math.random()*8;
+  const delay = Math.random()*10;
+  const drift = (Math.random()*40-20)+'px';
+  p.style.left = left+'vw';
+  p.style.animationDuration = dur+'s';
+  p.style.animationDelay = delay+'s';
+  p.style.setProperty('--drift', drift);
+  container.appendChild(p);
+}
+</script>
+
+</body>
+</html>
