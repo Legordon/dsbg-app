@@ -1,17 +1,29 @@
 // Service worker — Dark Souls Reference
 // Stratégie "cache d'abord" : une fois visitée, l'appli fonctionne hors-ligne.
 // À chaque changement de contenu, monter CACHE_VERSION pour forcer la mise à jour.
-const CACHE_VERSION = 'dsbg-ref-v1.1';
+const CACHE_VERSION = 'dsbg-ref-v1.2';
 const APP_SHELL = [
   './dark-souls-reference.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './apple-touch-icon.png'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_VERSION).then((cache) => cache.addAll(APP_SHELL))
+    caches.open(CACHE_VERSION).then((cache) => {
+      // On met chaque fichier en cache individuellement : si l'un d'eux
+      // 404 ou échoue (nom renommé, casse différente...), les autres
+      // sont quand même mis en cache au lieu de tout faire échouer.
+      return Promise.all(
+        APP_SHELL.map((url) =>
+          cache.add(url).catch((err) => {
+            console.warn('[sw] échec de mise en cache pour', url, err);
+          })
+        )
+      );
+    })
   );
   self.skipWaiting();
 });
