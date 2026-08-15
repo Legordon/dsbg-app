@@ -849,10 +849,8 @@
       height: 30px;
       border-radius: 50%;
       border: 2px solid rgba(232, 89, 12, 0.85);
-      background: rgba(232, 89, 12, 0.25);
+      background: rgba(232, 89, 12, 0.85);
       cursor: pointer;
-      left: 0;
-      top: 0;
       margin-left: -15px;
       margin-top: -15px;
       display: flex;
@@ -875,8 +873,8 @@
     }
 
     .refcard-hotspot.highlight {
-      background: rgba(232, 89, 12, 0.55);
-      box-shadow: 0 0 0 4px rgba(232, 89, 12, 0.25);
+      background: rgba(255, 140, 60, 1);
+      box-shadow: 0 0 0 4px rgba(232, 89, 12, 0.35);
     }
 
     .refcard-overlay-icon {
@@ -1289,11 +1287,11 @@
         const card = ENNEMI_REFCARD;
         let hotspotsHtml = '';
         card.hotspots.forEach(h => {
-          hotspotsHtml += `<div class="refcard-hotspot" id="hs-${h.num}" style="left:${h.x}%; top:${h.y}%;" onclick="highlightRefcard(${h.num})"><span class="num">${h.num}</span></div>`;
+          hotspotsHtml += `<div class="refcard-hotspot" id="hs-${h.num}" onclick="highlightRefcard(${h.num})"><span class="num">${h.num}</span></div>`;
         });
         let overlaysHtml = '';
-        (card.overlays || []).forEach(o => {
-          overlaysHtml += `<div class="refcard-overlay-icon" style="left:${o.x}%; top:${o.y}%; width:${o.w}%;"><img src="${o.src}" alt=""></div>`;
+        (card.overlays || []).forEach((o, i) => {
+          overlaysHtml += `<div class="refcard-overlay-icon" id="ov-${i}" style="width:${o.w}%;"><img src="${o.src}" alt=""></div>`;
         });
         let legendHtml = '';
         card.hotspots.forEach(h => {
@@ -1316,6 +1314,22 @@
           </div>
           <div class="refcard-legend">${legendHtml}</div>
         `;
+
+        // Positionnement en JS pur (évite tout conflit de cascade CSS avec le style inline)
+        card.hotspots.forEach(h => {
+          const el = document.getElementById('hs-' + h.num);
+          if (el) {
+            el.style.setProperty('left', h.x + '%');
+            el.style.setProperty('top', h.y + '%');
+          }
+        });
+        (card.overlays || []).forEach((o, i) => {
+          const el = document.getElementById('ov-' + i);
+          if (el) {
+            el.style.setProperty('left', o.x + '%');
+            el.style.setProperty('top', o.y + '%');
+          }
+        });
       }
     }
 
