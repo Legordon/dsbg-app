@@ -841,48 +841,35 @@
 
     .refcard-hotspot {
       position: absolute;
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      border: 2px solid rgba(232, 89, 12, 0.85);
-      background: rgba(232, 89, 12, 0.85);
+      width: var(--hs-w, 34px);
+      height: var(--hs-h, 34px);
+      border-radius: var(--hs-radius, 50%);
+      background: transparent;
       cursor: pointer;
-      margin-left: -28px;
-      margin-top: -28px;
+      margin-left: calc(var(--hs-w, 34px) / -2);
+      margin-top: calc(var(--hs-h, 34px) / -2);
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background .15s ease, box-shadow .15s ease;
+      transition: background .15s ease;
       z-index: 5;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
     }
 
     .refcard-hotspot:active {
-      background: rgba(232, 89, 12, 0.5);
+      background: rgba(232, 89, 12, 0.25);
     }
 
     .refcard-hotspot .num {
-      font-family: 'Cinzel', serif;
-      font-weight: 700;
-      font-size: 0.85rem;
-      color: #fff;
-      text-shadow: 0 0 4px rgba(0, 0, 0, 0.9), 0 0 2px rgba(0, 0, 0, 1);
+      display: none;
     }
 
     .refcard-hotspot.highlight {
-      background: rgba(255, 140, 60, 1);
-      box-shadow: 0 0 0 4px rgba(232, 89, 12, 0.35);
+      background: rgba(255, 140, 60, 0.35);
+      box-shadow: 0 0 0 3px rgba(232, 89, 12, 0.6);
     }
 
     .refcard-overlay-icon {
-      position: absolute;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-    }
-
-    .refcard-overlay-icon img {
-      display: block;
-      width: 100%;
+      display: none;
     }
 
     .refcard-legend {
@@ -1053,47 +1040,45 @@
       setup: { label: "Mise en place", icon: "🗺️", sub: "Checklist avant de jouer", type: "direct" },
       bonfire: { label: "Feu de camp", icon: "🔥", sub: "Actions disponibles", type: "direct" },
       shop: { label: "Objets & âmes", icon: "🛡️", sub: "Coûts en âmes", type: "direct" },
-      combat: {
-        label: "Rencontres", icon: "⚔️", sub: "Combat, décor, ressources…",
+      deroulement: {
+        label: "Déroulement", icon: "🔄", sub: "Exploration, tours, fin de rencontre",
         type: "categories",
-        categories: {
-          deroulement: {
-            label: "Déroulement", icon: "🔄", hint: "Exploration, tours, fin de rencontre",
-            children: {
-              exploration: { label: "Exploration", emoji: "🚪", hint: "Tuiles, Brume Portail" },
-              tour: { label: "Déroulement des tours", emoji: "🔄", hint: "Qui joue quand, énergie gagnée" },
-              fin: { label: "Fin de rencontre", emoji: "🏁", hint: "Victoire, défaite, âmes perdues" },
-              punitions: { label: "Punitions & fin de partie", emoji: "⚠️", hint: "Étincelles à 0, défaite finale" },
-              progression: { label: "Après le Boss Secondaire", emoji: "🗝️", hint: "Remise en place avant le Boss Principal" }
-            }
-          },
-          actions: {
-            label: "Actions", icon: "👣", hint: "Déplacements, aggro, push, ressources",
-            children: {
-              deplacements: { label: "Déplacements", emoji: "👣", hint: "Marcher, courir, esquiver" },
-              aggro: { label: "Aggro", emoji: "☠️", hint: "Qui les ennemis ciblent" },
-              push: { label: "Push", emoji: "🌀", hint: "Poussée de figurine" },
-              ressources: { label: "Action Héroïque / Chance / Estus", emoji: "✨", hint: "Utiliser ses ressources en rencontre" }
-            }
-          },
-          resolution: {
-            label: "Jets & résolution", icon: "🎲", hint: "Dés, portée, esquive, endurance",
-            children: {
-              des: { label: "Les dés", emoji: "🎲", hint: "Noir, bleu, orange, vert" },
-              portee: { label: "Portée", emoji: "📏", hint: "0 / 1 / 2 / ∞" },
-              esquive: { label: "Parade / Esquive", emoji: "🛡️", hint: "Réduire ou éviter les dégâts" },
-              endurance: { label: "Endurance / dégâts", emoji: "💥", hint: "La barre unique Énergie-Vie" }
-            }
-          },
-          decor: {
-            label: "Décor & états", icon: "📦", hint: "Coffres, pièges, tonneaux, conditions",
-            children: {
-              decor: { label: "Coffres & pièges", emoji: "📦", hint: "Bloquent, se déclenchent" },
-              tonneaux: { label: "Tonneaux", emoji: "🛢️", hint: "Bloquent, se détruisent" },
-              steles: { label: "Stèles", emoji: "🪨", hint: "Bloquent, révèlent le boss" },
-              etats: { label: "États négatifs", emoji: "🩸", hint: "Saignement, poison, gelure, fléchir" }
-            }
-          }
+        children: {
+          exploration: { label: "Exploration", emoji: "🚪", hint: "Tuiles, Brume Portail" },
+          tour: { label: "Déroulement des tours", emoji: "🔄", hint: "Qui joue quand, énergie gagnée" },
+          fin: { label: "Fin de rencontre", emoji: "🏁", hint: "Victoire, défaite, âmes perdues" },
+          punitions: { label: "Punitions & fin de partie", emoji: "⚠️", hint: "Étincelles à 0, défaite finale" },
+          progression: { label: "Après le Boss Secondaire", emoji: "🗝️", hint: "Remise en place avant le Boss Principal" }
+        }
+      },
+      actions: {
+        label: "Actions", icon: "👣", sub: "Déplacements, aggro, push, ressources",
+        type: "categories",
+        children: {
+          deplacements: { label: "Déplacements", emoji: "👣", hint: "Marcher, courir, esquiver" },
+          aggro: { label: "Aggro", emoji: "☠️", hint: "Qui les ennemis ciblent" },
+          push: { label: "Push", emoji: "🌀", hint: "Poussée de figurine" },
+          ressources: { label: "Action Héroïque / Chance / Estus", emoji: "✨", hint: "Utiliser ses ressources en rencontre" }
+        }
+      },
+      resolution: {
+        label: "Jets & résolution", icon: "🎲", sub: "Dés, portée, esquive, endurance",
+        type: "categories",
+        children: {
+          des: { label: "Les dés", emoji: "🎲", hint: "Noir, bleu, orange, vert" },
+          portee: { label: "Portée", emoji: "📏", hint: "0 / 1 / 2 / ∞" },
+          esquive: { label: "Parade / Esquive", emoji: "🛡️", hint: "Réduire ou éviter les dégâts" },
+          endurance: { label: "Endurance / dégâts", emoji: "💥", hint: "La barre unique Énergie-Vie" }
+        }
+      },
+      decor: {
+        label: "Décor & états", icon: "📦", sub: "Coffres, pièges, tonneaux, conditions",
+        type: "categories",
+        children: {
+          decor: { label: "Coffres & pièges", emoji: "📦", hint: "Bloquent, se déclenchent" },
+          tonneaux: { label: "Tonneaux", emoji: "🛢️", hint: "Bloquent, se détruisent" },
+          steles: { label: "Stèles", emoji: "🪨", hint: "Bloquent, révèlent le boss" },
+          etats: { label: "États négatifs", emoji: "🩸", hint: "Saignement, poison, gelure, fléchir" }
         }
       }
     };
@@ -1203,13 +1188,13 @@
         { type: 'img', src: IMG_ATTACK_PHYSICAL_4, x: 58, y: 71, w: 18 },
       ],
       hotspots: [
-        { num: 1, x: 6, y: 3, name: "Niveau de Menace", desc: "Détermine l'ordre d'activation des ennemis entre eux lors du combat : du plus haut au plus bas niveau de menace." },
-        { num: 2, x: 78, y: 4, name: "Santé de Départ", desc: "Dégâts que l'ennemi peut subir avant d'être vaincu et retiré de la tuile. Un jeton blessure est placé sous lui à chaque dégât subi." },
-        { num: 3, x: 6, y: 52, name: "Portée d'Attaque", desc: "Portée maximale à laquelle la figurine ennemie peut attaquer les personnages." },
-        { num: 4, x: 42, y: 52, name: "Valeurs de Parade et de Résistance", desc: "Réduisent respectivement les dégâts physiques et magiques subis par l'ennemi lors des attaques des personnages." },
-        { num: 5, x: 78, y: 52, name: "Difficulté d'Esquive", desc: "Détermine la difficulté pour les personnages d'esquiver l'attaque de cet ennemi." },
-        { num: 6, x: 11, y: 65, name: "Icônes de Comportement", desc: "Le cœur de tout ennemi : elles déterminent son comportement à chaque activation, résolues de gauche à droite. Ici : se déplacer de 1 repère vers le personnage avec le jeton Aggro, puis attaquer ce personnage pour 4 dégâts physiques." },
-        { num: 7, x: 78, y: 29, name: "Icônes Ennemi", desc: "Symbole d'identification visuelle rapide du type d'ennemi, utilisé sur les cartes Rencontre pour indiquer quelles figurines placer." },
+        { num: 1, x: 13, y: 10, w: 17.7, h: 17.1, name: "Niveau de Menace", desc: "Détermine l'ordre d'activation des ennemis entre eux lors du combat : du plus haut au plus bas niveau de menace." },
+        { num: 2, x: 84, y: 10, w: 18.4, h: 16.4, name: "Santé de Départ", desc: "Dégâts que l'ennemi peut subir avant d'être vaincu et retiré de la tuile. Un jeton blessure est placé sous lui à chaque dégât subi." },
+        { num: 3, x: 12, y: 58, w: 17.8, h: 16.1, name: "Portée d'Attaque", desc: "Portée maximale à laquelle la figurine ennemie peut attaquer les personnages." },
+        { num: 4, x: 48, y: 58, w: 20.8, h: 17.6, name: "Valeurs de Parade et de Résistance", desc: "Réduisent respectivement les dégâts physiques et magiques subis par l'ennemi lors des attaques des personnages." },
+        { num: 5, x: 84, y: 58, w: 17.8, h: 15.8, name: "Difficulté d'Esquive", desc: "Détermine la difficulté pour les personnages d'esquiver l'attaque de cet ennemi." },
+        { num: 6, x: 33.5, y: 77.5, w: 59.1, h: 23, radius: "12px", name: "Icônes de Comportement", desc: "Le cœur de tout ennemi : elles déterminent son comportement à chaque activation, résolues de gauche à droite. Ici : se déplacer de 1 repère vers le personnage le plus proche, puis attaquer ce personnage pour 4 dégâts physiques. Le petit anneau à côté de chaque icône indique que l'action cible le personnage le plus proche." },
+        { num: 7, x: 84, y: 34, w: 18.4, h: 15.2, name: "Icônes Ennemi", desc: "Symbole d'identification visuelle rapide du type d'ennemi, utilisé sur les cartes Rencontre pour indiquer quelles figurines placer." },
       ]
     };
 
@@ -1313,11 +1298,18 @@
         `;
 
         // Positionnement en JS pur (évite tout conflit de cascade CSS avec le style inline)
+        const wrapEl = document.querySelector('.refcard-wrap');
+        const wrapWidth = wrapEl ? wrapEl.offsetWidth : 340;
         card.hotspots.forEach(h => {
           const el = document.getElementById('hs-' + h.num);
           if (el) {
             el.style.setProperty('left', h.x + '%');
             el.style.setProperty('top', h.y + '%');
+            const wPx = (h.w || 8.3) / 100 * wrapWidth;
+            const hPx = (h.h || 8.3) / 100 * wrapWidth;
+            el.style.setProperty('--hs-w', wPx + 'px');
+            el.style.setProperty('--hs-h', hPx + 'px');
+            if (h.radius) el.style.setProperty('--hs-radius', h.radius);
           }
         });
         (card.overlays || []).forEach((o, i) => {
@@ -1416,7 +1408,7 @@
     // Laisser une fiche absente = pas de version maison, le texte officiel reste affiché même en mode Maison.
     const HOUSE_RULES = {
 
-      "combat:tour": `
+      "deroulement:tour": `
       <div class="section-label">Qui joue en premier ?</div>
       <div class="flow">
         <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Une rencontre commence toujours par l'activation de <b>tous les ennemis</b>, avant le premier personnage.</div></div>
@@ -1434,7 +1426,7 @@
       </div>
       <div class="note"><strong>Nouveau en V2</strong> : pendant l'activation d'un <b>autre</b> personnage, chaque personnage peut se déplacer de 1 repère gratuitement (mouvement d'Upkeep), sans dépenser d'Énergie.</div>`,
 
-      "combat:esquive": `
+      "resolution:esquive": `
       <div class="action">
         <div class="title">Défense en un seul jet</div>
         <div class="desc">Au lieu de choisir entre Esquiver ou Parade/Résistance, lance <b>tous tes dés de défense en même temps</b> : dés <span class="die die-vert">●</span> d'Esquive + dés <span class="die die-noir">●</span>/<span class="die die-bleu">●</span> de Parade/Résistance de ton équipement.</div>
@@ -1448,7 +1440,7 @@
         <div class="desc">L'Esquive ne coûte 1 Énergie que si elle a <b>réussi ET</b> que tu choisis de te déplacer d'un repère. Une tentative ratée, ou une esquive réussie sans déplacement, ne coûte rien.</div>
       </div>`,
 
-      "combat:endurance": `
+      "resolution:endurance": `
       <p style="color:var(--muted); font-size:0.82rem; margin:8px 0 4px;">La barre fonctionne comme en V1, avec un léger sursis avant la mort.</p>
       <div class="stat-pair">
         <div class="stat-box"><div class="lbl">Énergie dépensée</div><div class="val">Cube noir</div></div>
@@ -1484,7 +1476,7 @@
       <div class="note warn"><strong>Changement majeur</strong> : visiter le feu de camp entre les rencontres coûte désormais <b>1 étincelle</b> (au lieu d'être gratuit en V1) — que ce soit pour un simple repos, ou pour aller voir André ou la Gardienne.</div>
       <div class="note">Le reste du repos fonctionne comme en V1 : Estus rechargés, jetons Action Héroïque/Chance disponibles, cartes Rencontre réinitialisées.</div>`,
 
-      "combat:fin": `
+      "deroulement:fin": `
       <div class="section-label">Victoire</div>
       <div class="flow">
         <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Rencontre normale : <b>+2 âmes par personnage</b>, comme en V1.</div></div>
@@ -1497,13 +1489,13 @@
       </div>
       <div class="note warn"><strong>Pas d'échappatoire</strong> : une fois lancé dans une rencontre, le groupe ne peut pas la quitter avant victoire ou défaite complète.</div>`,
 
-      "combat:tonneaux": `
+      "decor:tonneaux": `
       <div class="flow">
         <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Changement V2 : un tonneau est <b>détruit automatiquement</b> dès qu'une figurine se déplace sur son repère — plus besoin de dépenser 1 Énergie supplémentaire comme en V1.</div></div>
         <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Nouveau bonus : si un tonneau <b>survit intact</b> jusqu'à la fin de la rencontre (jamais traversé), il rapporte des âmes égales au résultat d'un jet de <span class="die die-noir">●</span> dé noir.</div></div>
       </div>`,
 
-      "combat:etats": `
+      "decor:etats": `
       <p style="color:var(--muted); font-size:0.82rem; margin:8px 0 14px;">Seule la Gelure change en V2 ; Saignement, Poison et Fléchir restent identiques à la V1.</p>
       <div class="action">
         <div class="title">${glyph("saignement")} Saignement</div>
@@ -1523,7 +1515,7 @@
       </div>
       <div class="note">Poison, Gelure et Fléchir sont retirés à la fin de l'activation de la figurine. Tous les jetons condition restants sont retirés à la fin de la rencontre.</div>`,
 
-      "combat:steles": `
+      "decor:steles": `
       <div class="flow">
         <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Les Stèles bloquent toujours les déplacements, comme en V1.</div></div>
         <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Effet changé : chaque stèle révèle la carte du dessus de la pile <b>Rencontre, Trésor, ou Événement</b> (au choix des joueurs) — plus seulement le comportement du boss.</div></div>
@@ -1546,7 +1538,13 @@
       html += `<div class="grid">`;
       for (const key in THEMES) {
         const t = THEMES[key];
-        const tag = hasHouseRule(key) ? `<span class="tag-v2">V2</span>` : '';
+        let tag = '';
+        if (t.type === "categories") {
+          const anyHouseRule = Object.keys(t.children).some(sk => hasHouseRule(key + ':' + sk));
+          tag = anyHouseRule ? `<span class="tag-v2">V2</span>` : '';
+        } else {
+          tag = hasHouseRule(key) ? `<span class="tag-v2">V2</span>` : '';
+        }
         html += `
       <div class="tile" onclick="openTheme('${key}')">
         <div class="icon">${t.icon}</div>
@@ -1567,19 +1565,14 @@
       renderHome();
     }
 
-    function renderBreadcrumb(theme, category, sub) {
+    function renderBreadcrumb(theme, sub) {
       let html = `<div class="breadcrumb"><span class="crumb" onclick="renderHome()">Accueil</span>`;
       if (theme) {
-        const active = !category && !sub;
+        const active = !sub;
         html += `<span class="sep">/</span><span class="crumb ${active ? 'active' : ''}" onclick="openTheme('${theme}')">${THEMES[theme].label}</span>`;
       }
-      if (category) {
-        const cat = THEMES[theme].categories[category];
-        const active = !sub;
-        html += `<span class="sep">/</span><span class="crumb ${active ? 'active' : ''}" onclick="openCategory('${theme}','${category}')">${cat.label}</span>`;
-      }
       if (sub) {
-        const label = THEMES[theme].categories[category].children[sub].label;
+        const label = THEMES[theme].children[sub].label;
         html += `<span class="sep">/</span><span class="crumb active">${label}</span>`;
       }
       html += `<span class="version-chip ${currentMode === 'house' ? 'v2' : 'v1'}">${currentMode === 'house' ? 'V2' : 'V1'}</span>`;
@@ -1588,20 +1581,21 @@
     }
 
     function openTheme(key) {
-      currentTheme = key; currentCategory = null; currentSubKey = null;
+      currentTheme = key; currentSubKey = null;
       const t = THEMES[key];
 
       if (t.type === "categories") {
-        let html = renderBreadcrumb(key, null, null);
+        let html = renderBreadcrumb(key, null);
         html += `<h2>${t.label}</h2>`;
         html += `<ul class="sublist">`;
-        for (const ck in t.categories) {
-          const c = t.categories[ck];
+        for (const sk in t.children) {
+          const s = t.children[sk];
+          const tag = hasHouseRule(key + ':' + sk) ? `<span class="tag-v2">V2</span>` : '';
           html += `
-        <li onclick="openCategory('${key}','${ck}')">
+        <li onclick="openSub('${key}','${sk}')">
           <div class="left">
-            <div class="emoji">${c.icon}</div>
-            <div><div class="name">${c.label}</div><div class="hint">${c.hint}</div></div>
+            <div class="emoji">${s.emoji}</div>
+            <div><div class="name">${s.label}${tag}</div><div class="hint">${s.hint}</div></div>
           </div>
           <div class="chevron">›</div>
         </li>`;
@@ -1611,37 +1605,15 @@
         return;
       }
 
-      const breadcrumb = renderBreadcrumb(key, null, null);
+      const breadcrumb = renderBreadcrumb(key, null);
       renderFicheContainer(key, breadcrumb, renderDirectContent(key), t.label);
     }
 
-    function openCategory(theme, category) {
-      currentTheme = theme; currentCategory = category; currentSubKey = null;
-      const cat = THEMES[theme].categories[category];
-      let html = renderBreadcrumb(theme, category, null);
-      html += `<h2>${cat.label}</h2>`;
-      html += `<ul class="sublist">`;
-      for (const sk in cat.children) {
-        const s = cat.children[sk];
-        const tag = hasHouseRule(theme + ':' + sk) ? `<span class="tag-v2">V2</span>` : '';
-        html += `
-      <li onclick="openSub('${theme}','${category}','${sk}')">
-        <div class="left">
-          <div class="emoji">${s.emoji}</div>
-          <div><div class="name">${s.label}${tag}</div><div class="hint">${s.hint}</div></div>
-        </div>
-        <div class="chevron">›</div>
-      </li>`;
-      }
-      html += `</ul>`;
-      document.getElementById('main').innerHTML = html;
-    }
-
-    function openSub(theme, category, sub) {
-      currentTheme = theme; currentCategory = category; currentSubKey = sub;
-      const breadcrumb = renderBreadcrumb(theme, category, sub);
+    function openSub(theme, sub) {
+      currentTheme = theme; currentSubKey = sub;
+      const breadcrumb = renderBreadcrumb(theme, sub);
       const ficheKey = theme + ':' + sub;
-      renderFicheContainer(ficheKey, breadcrumb, renderSubContent(theme, sub), THEMES[theme].categories[category].children[sub].label);
+      renderFicheContainer(ficheKey, breadcrumb, renderSubContent(theme, sub), THEMES[theme].children[sub].label);
     }
 
     function renderFicheContainer(ficheKey, breadcrumbHtml, officialHtml, ficheLabel) {
@@ -1735,7 +1707,7 @@
 
     // ---------- CONTENU : sous-fiches Combat ----------
     function renderSubContent(theme, sub) {
-      if (theme !== "combat") return "";
+      // Le contenu ci-dessous est indexé par nom de fiche (sub), indépendamment du thème parent
 
       if (sub === "exploration") {
         return `
