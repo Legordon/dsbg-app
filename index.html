@@ -1056,6 +1056,7 @@
         type: "categories",
         children: {
           deplacements: { label: "Déplacements", emoji: "👣", hint: "Marcher, courir, esquiver" },
+          attaquer: { label: "Attaquer", emoji: "⚔️", hint: "Cible, jet de dés, dégâts" },
           aggro: { label: "Aggro", emoji: "☠️", hint: "Qui les ennemis ciblent" },
           push: { label: "Push", emoji: "🌀", hint: "Poussée de figurine" },
           ressources: { label: "Action Héroïque / Chance / Estus", emoji: "✨", hint: "Utiliser ses ressources en rencontre" }
@@ -1932,6 +1933,34 @@
         <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Un déplacement de <b>poussée</b> (subi, pas choisi) ne coûte jamais d'Énergie — voir fiche Push.</div></div>
         <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Certaines conditions augmentent le coût : <b>Gelure</b> ajoute 1 Énergie à chaque marche/course/esquive ; un tonneau sur le chemin ajoute aussi 1 Énergie pour le traverser (et le détruit).</div></div>
       </div>`;
+      }
+
+      if (sub === "attaquer") {
+        return `
+      <h2>Attaquer</h2>
+      <p style="color:var(--muted); font-size:0.82rem; margin:8px 0 4px;">Pendant son activation, un personnage peut effectuer jusqu'à une attaque avec chaque arme dans ses emplacements main.</p>
+      <div class="section-label">Cibler et choisir l'attaque</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">Le personnage cible un <b>ennemi à portée</b> de l'une de ses armes.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Il choisit une des <b>options d'attaque</b> de cette arme, et dépense un nombre d'Énergies égal au coût indiqué.</div></div>
+        <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Il lance la quantité et la couleur de dés indiquées sur l'attaque choisie. Chaque point obtenu représente <b>1 dégât</b>.</div></div>
+      </div>
+      <div class="note">Exemple : le Shortsword a deux options d'attaque — pour <b>0 Énergie</b>, lancer <span class="die die-noir">2</span> ; pour <b>2 Énergies</b>, lancer <span class="die die-noir">3</span>.</div>
+
+      <div class="section-label">Type de dégâts</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">La plupart des armes infligent des dégâts <b>physiques</b> : on déduit la valeur de <b>Parade</b> de la cible du total.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Les sorts et armes élémentaires infligent des dégâts <b>magiques</b> : on déduit la valeur de <b>Résistance</b> de la cible du total.</div></div>
+        <div class="flow-step"><div class="flow-num">03</div><div class="flow-text">Si la Parade ou la Résistance de l'ennemi égale ou dépasse le total de dégâts, l'ennemi subit <b>0 dégât</b> — mais reste touché.</div></div>
+      </div>
+
+      <div class="section-label">Résolution</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-num">01</div><div class="flow-text">L'ennemi subit les dégâts restants après déduction. Placez sous lui un jeton blessure par point de dégât subi.</div></div>
+        <div class="flow-step"><div class="flow-num">02</div><div class="flow-text">Si le total de jetons blessure égale ou dépasse sa <b>Santé de Départ</b>, il est vaincu : retirez la figurine et ses jetons blessure de la tuile.</div></div>
+      </div>
+
+      <div class="note"><strong>Touché ≠ dégât</strong> : même à 0 dégât grâce à la Parade ou la Résistance, l'ennemi reste "touché" et peut donc être poussé ou subir une condition si l'attaque en inflige une.</div>`;
       }
 
       if (sub === "tour") {
