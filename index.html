@@ -179,6 +179,69 @@
       margin-top: 6px;
     }
 
+    /* ---------- Recherche accueil ---------- */
+    .search-wrap {
+      position: relative;
+      margin-bottom: 14px;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px 38px 12px 14px;
+      color: var(--bone);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+    }
+
+    .search-wrap input:focus {
+      outline: none;
+      border-color: rgba(232, 89, 12, 0.6);
+    }
+
+    .search-wrap input::placeholder {
+      color: var(--muted);
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--card-border);
+      color: var(--bone);
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .search-results-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      margin: 0 0 10px;
+    }
+
+    .search-empty {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 30px 10px;
+    }
+
+    .search-input-outer {
+      position: relative;
+      flex: 1;
+    }
+
     .tile {
       background: linear-gradient(160deg, var(--card), #100e0b);
       border: 1px solid var(--card-border);
@@ -269,6 +332,11 @@
       font-size: 0.72rem;
       color: var(--muted);
       margin-top: 2px;
+    }
+
+    .sublist li .hint b {
+      color: var(--ember-bright);
+      font-weight: 700;
     }
 
     .sublist li .chevron {
@@ -676,6 +744,39 @@
       transform: scale(0.93);
     }
 
+    /* ---------- Bouton recherche (header) ---------- */
+    .header-search-btn {
+      position: absolute;
+      top: 22px;
+      right: 62px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+    }
+
+    .header-search-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .header-search-btn:active {
+      transform: scale(0.93);
+    }
+
+    .header-search-btn.active {
+      color: var(--ember-bright);
+      border-color: rgba(232, 89, 12, 0.5);
+      box-shadow: 0 0 10px rgba(232, 89, 12, 0.15);
+    }
+
     /* ---------- Modale Glossaire ---------- */
     .modal-overlay {
       position: fixed;
@@ -1018,6 +1119,12 @@
       <div class="glow"></div>
       <h1>DARK SOULS</h1>
       <p>The Board Game</p>
+      <button class="header-search-btn" id="header-search-btn" onclick="toggleHeaderSearch()"
+        aria-label="Rechercher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg></button>
       <button class="glossary-btn" onclick="openGlossary()" aria-label="Glossaire des icônes">?</button>
     </header>
 
@@ -1529,32 +1636,237 @@
     let currentCategory = null;
     let currentSubKey = null;
     let currentMode = 'official';
+    let searchQuery = '';
+    let searchOpen = false;
+
+    // ---------- Index de recherche (titres des fiches et sous-fiches) ----------
+    function htmlToText(html) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html || '';
+      return tmp.textContent.replace(/\s+/g, ' ').trim();
+    }
+
+    function buildSearchIndex() {
+      const index = [];
+      for (const key in THEMES) {
+        const t = THEMES[key];
+        if (t.type === "categories") {
+          for (const sk in t.children) {
+            const s = t.children[sk];
+            const ficheKey = key + ':' + sk;
+            const officialText = htmlToText(renderSubContent(key, sk));
+            const houseText = htmlToText(HOUSE_RULES[ficheKey] || '');
+            index.push({
+              theme: key,
+              sub: sk,
+              label: s.label,
+              emoji: s.emoji,
+              hint: s.hint,
+              parentLabel: t.label,
+              text: [officialText, houseText].filter(Boolean).join(' — ')
+            });
+          }
+        } else {
+          const officialText = htmlToText(renderDirectContent(key));
+          const houseText = htmlToText(HOUSE_RULES[key] || '');
+          index.push({
+            theme: key,
+            sub: null,
+            label: t.label,
+            emoji: t.icon,
+            hint: t.sub,
+            parentLabel: null,
+            text: [officialText, houseText].filter(Boolean).join(' — ')
+          });
+        }
+      }
+      return index;
+    }
+
+    const SEARCH_INDEX = buildSearchIndex();
+
+    function normalize(str) {
+      return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
+    // Normalise une chaîne tout en gardant, pour chaque caractère normalisé,
+    // l'index correspondant dans la chaîne d'origine (pour extraire un extrait fidèle).
+    function normalizeWithMap(str) {
+      let out = '';
+      const map = [];
+      for (let i = 0; i < str.length; i++) {
+        const decomposed = str[i].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        for (let j = 0; j < decomposed.length; j++) {
+          out += decomposed[j];
+          map.push(i);
+        }
+      }
+      return { text: out, map };
+    }
+
+    function buildSnippet(originalText, normMatchIndex, matchLength, normMap) {
+      const startOrig = normMap[normMatchIndex] ?? 0;
+      const endNormIndex = Math.min(normMatchIndex + matchLength - 1, normMap.length - 1);
+      const endOrig = normMap[endNormIndex] ?? startOrig;
+      const radius = 40;
+      let from = Math.max(0, startOrig - radius);
+      let to = Math.min(originalText.length, endOrig + 1 + radius);
+      const before = originalText.slice(from, startOrig);
+      const matched = originalText.slice(startOrig, endOrig + 1);
+      const after = originalText.slice(endOrig + 1, to);
+      return `${from > 0 ? '…' : ''}${escapeAttr(before)}<b>${escapeAttr(matched)}</b>${escapeAttr(after)}${to < originalText.length ? '…' : ''}`;
+    }
+
+    let restoreSearchFocus = false;
+
+    function onSearchInput(value) {
+      searchQuery = value;
+      restoreSearchFocus = true;
+      renderHomeBody();
+    }
+
+    function clearSearch() {
+      searchQuery = '';
+      restoreSearchFocus = true;
+      renderHomeBody();
+    }
+
+    function openSearch() {
+      searchOpen = true;
+      restoreSearchFocus = true;
+      renderHomeBody();
+      updateHeaderSearchBtn();
+    }
+
+    function closeSearch() {
+      searchOpen = false;
+      searchQuery = '';
+      renderHomeBody();
+      updateHeaderSearchBtn();
+    }
+
+    function toggleHeaderSearch() {
+      const onHome = currentTheme === null;
+      if (onHome && searchOpen) {
+        closeSearch();
+      } else {
+        if (!onHome) {
+          renderHome();
+        }
+        openSearch();
+      }
+    }
+
+    function updateHeaderSearchBtn() {
+      const btn = document.getElementById('header-search-btn');
+      if (btn) btn.classList.toggle('active', searchOpen);
+    }
+
+    function goToSearchResult(theme, sub) {
+      if (sub) {
+        openSub(theme, sub);
+      } else {
+        openTheme(theme);
+      }
+    }
 
     function renderHome() {
       currentTheme = null; currentCategory = null; currentSubKey = null;
+      searchQuery = '';
+      searchOpen = false;
+      renderHomeBody();
+      updateHeaderSearchBtn();
+    }
+
+    function renderHomeBody() {
       let html = `<div class="mode-toggle">
     <button class="mode-btn ${currentMode === 'official' ? 'active' : ''}" onclick="setMode('official')">V1<small>Édition 2017</small></button>
     <button class="mode-btn ${currentMode === 'house' ? 'active' : ''}" onclick="setMode('house')">V2<small>Sunless City & co</small></button>
   </div>`;
-      html += `<div class="grid">`;
-      for (const key in THEMES) {
-        const t = THEMES[key];
-        let tag = '';
-        if (t.type === "categories") {
-          const anyHouseRule = Object.keys(t.children).some(sk => hasHouseRule(key + ':' + sk));
-          tag = anyHouseRule ? `<span class="tag-v2">V2</span>` : '';
-        } else {
-          tag = hasHouseRule(key) ? `<span class="tag-v2">V2</span>` : '';
-        }
-        html += `
-      <div class="tile" onclick="openTheme('${key}')">
-        <div class="icon">${t.icon}</div>
-        <div class="label">${t.label}${tag}</div>
-        <div class="sub">${t.sub}</div>
-      </div>`;
+
+      if (searchOpen) {
+        html += `<div class="search-wrap">
+    <div class="search-input-outer">
+      <input id="home-search-input" type="text" placeholder="Rechercher une fiche…" value="${escapeAttr(searchQuery)}" oninput="onSearchInput(this.value)">
+      ${searchQuery ? `<div class="search-clear" onclick="clearSearch()">✕</div>` : ''}
+    </div>
+  </div>`;
       }
-      html += `</div>`;
+
+      const q = normalize(searchQuery.trim());
+
+      if (q.length > 0) {
+        const results = SEARCH_INDEX
+          .map(item => {
+            const labelMatch = normalize(item.label).includes(q);
+            const normed = normalizeWithMap(item.text);
+            const textMatchIndex = normed.text.indexOf(q);
+            if (!labelMatch && textMatchIndex === -1) return null;
+            return { item, labelMatch, textMatchIndex, normMap: normed.map };
+          })
+          .filter(Boolean)
+          // Priorité aux correspondances de titre, puis à l'ordre d'apparition dans THEMES
+          .sort((a, b) => (b.labelMatch - a.labelMatch));
+
+        if (results.length === 0) {
+          html += `<div class="search-empty">Aucune fiche ne correspond à « ${searchQuery} ».</div>`;
+        } else {
+          html += `<div class="search-results-label">${results.length} résultat${results.length > 1 ? 's' : ''}</div>`;
+          html += `<ul class="sublist">`;
+          results.forEach(({ item, labelMatch, textMatchIndex, normMap }) => {
+            const tag = hasHouseRule(item.theme + (item.sub ? ':' + item.sub : '')) ? `<span class="tag-v2">V2</span>` : '';
+            let hintText = item.parentLabel ? `${item.parentLabel} · ${item.hint}` : item.hint;
+            if (!labelMatch && textMatchIndex !== -1) {
+              hintText = buildSnippet(item.text, textMatchIndex, q.length, normMap);
+            }
+            html += `
+          <li onclick="goToSearchResult('${item.theme}', ${item.sub ? `'${item.sub}'` : 'null'})">
+            <div class="left">
+              <div class="emoji">${item.emoji}</div>
+              <div><div class="name">${item.label}${tag}</div><div class="hint">${hintText}</div></div>
+            </div>
+            <div class="chevron">›</div>
+          </li>`;
+          });
+          html += `</ul>`;
+        }
+      } else {
+        html += `<div class="grid">`;
+        for (const key in THEMES) {
+          const t = THEMES[key];
+          let tag = '';
+          if (t.type === "categories") {
+            const anyHouseRule = Object.keys(t.children).some(sk => hasHouseRule(key + ':' + sk));
+            tag = anyHouseRule ? `<span class="tag-v2">V2</span>` : '';
+          } else {
+            tag = hasHouseRule(key) ? `<span class="tag-v2">V2</span>` : '';
+          }
+          html += `
+        <div class="tile" onclick="openTheme('${key}')">
+          <div class="icon">${t.icon}</div>
+          <div class="label">${t.label}${tag}</div>
+          <div class="sub">${t.sub}</div>
+        </div>`;
+        }
+        html += `</div>`;
+      }
+
       document.getElementById('main').innerHTML = html;
+
+      // Restaurer le focus et la position du curseur dans le champ après re-render,
+      // sinon chaque frappe fait perdre le focus (innerHTML recrée l'élément).
+      if (restoreSearchFocus) {
+        const input = document.getElementById('home-search-input');
+        if (input) {
+          input.focus();
+          input.setSelectionRange(input.value.length, input.value.length);
+        }
+        restoreSearchFocus = false;
+      }
+    }
+
+    function escapeAttr(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
     }
 
     function hasHouseRule(ficheKey) {
@@ -1583,6 +1895,8 @@
 
     function openTheme(key) {
       currentTheme = key; currentSubKey = null;
+      searchOpen = false;
+      updateHeaderSearchBtn();
       const t = THEMES[key];
 
       if (t.type === "categories") {
@@ -1612,6 +1926,8 @@
 
     function openSub(theme, sub) {
       currentTheme = theme; currentSubKey = sub;
+      searchOpen = false;
+      updateHeaderSearchBtn();
       const breadcrumb = renderBreadcrumb(theme, sub);
       const ficheKey = theme + ':' + sub;
       renderFicheContainer(ficheKey, breadcrumb, renderSubContent(theme, sub), THEMES[theme].children[sub].label);
