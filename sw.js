@@ -1,7 +1,7 @@
 // Service worker — Dark Souls Reference
 // Stratégie "cache d'abord" : une fois visitée, l'appli fonctionne hors-ligne.
 // À chaque changement de contenu, monter CACHE_VERSION pour forcer la mise à jour.
-const CACHE_VERSION = 'dsbg-ref-v2.1';
+const CACHE_VERSION = 'dsbg-ref-v2.2';
 const APP_SHELL = [
   './dark-souls-reference.html',
   './manifest.json',

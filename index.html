@@ -931,7 +931,7 @@
       max-width: 340px;
       margin: 0 auto 18px;
       border-radius: 10px;
-      overflow: hidden;
+      overflow: visible;
       border: 1px solid var(--card-border);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
@@ -939,96 +939,128 @@
     .refcard-wrap img.refcard-bg {
       width: 100%;
       display: block;
+      border-radius: 9px;
     }
 
-    .refcard-hotspot {
+    /* ---------- Hitbox rectangulaires + infobulles au clic (partagé : Ennemi + Arme) ---------- */
+    .refcard-hitbox {
       position: absolute;
-      width: var(--hs-w, 34px);
-      height: var(--hs-h, 34px);
-      border-radius: var(--hs-radius, 50%);
       background: transparent;
       cursor: pointer;
-      margin-left: calc(var(--hs-w, 34px) / -2);
-      margin-top: calc(var(--hs-h, 34px) / -2);
+      z-index: 5;
+      transition: background .15s ease;
+    }
+
+    .refcard-hitbox:active,
+    .refcard-hitbox.open {
+      background: rgba(232, 89, 12, 0.18);
+    }
+
+    .refcard-badge {
+      position: absolute;
+      top: -9px;
+      left: -9px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(232, 89, 12, 0.9);
+      border: 2px solid var(--ember-bright);
+      color: white;
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      font-size: 1rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background .15s ease;
-      z-index: 5;
+      pointer-events: none;
+      box-shadow: 0 0 6px rgba(232, 89, 12, 0.5);
+      transition: transform .12s ease, background .12s ease;
     }
 
-    .refcard-hotspot:active {
-      background: rgba(232, 89, 12, 0.25);
+    .refcard-badge.bl {
+      top: auto;
+      bottom: -9px;
+      left: -4px;
     }
 
-    .refcard-hotspot .num {
-      display: none;
+    .refcard-hitbox.open .refcard-badge {
+      background: var(--ember-bright);
+      transform: scale(1.15);
     }
 
-    .refcard-hotspot.highlight {
-      background: rgba(255, 140, 60, 0.35);
-      box-shadow: 0 0 0 3px rgba(232, 89, 12, 0.6);
-    }
-
-    .refcard-overlay-icon {
-      display: none;
-    }
-
-    .refcard-legend {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 4px;
-    }
-
-    .refcard-legend-item {
+    .refcard-tooltip {
+      position: absolute;
       background: var(--card);
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--ember);
       border-radius: 8px;
-      padding: 12px;
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      cursor: pointer;
-      transition: border-color .15s ease, background .15s ease;
-      scroll-margin-top: 12px;
+      padding: 10px 12px;
+      width: 210px;
+      font-size: 0.78rem;
+      line-height: 1.4;
+      color: var(--bone);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+      z-index: 10;
+      opacity: 0;
+      transform: translateY(4px);
+      pointer-events: auto;
+      transition: opacity .15s ease, transform .15s ease;
     }
 
-    .refcard-legend-item:active {
-      border-color: rgba(232, 89, 12, 0.5);
+    .refcard-tooltip.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
 
-    .refcard-legend-item.highlight {
-      border-color: var(--ember);
-      background: rgba(232, 89, 12, 0.08);
-    }
-
-    .refcard-legend-item .num-badge {
+    .refcard-tooltip .tname {
       font-family: 'Cinzel', serif;
       font-weight: 700;
       font-size: 0.8rem;
-      color: #0a0908;
-      background: var(--ember-bright);
-      width: 22px;
-      height: 22px;
-      min-width: 22px;
+      color: var(--ember-bright);
+      margin: 0 22px 4px 0;
+    }
+
+    .refcard-tooltip .tdesc {
+      color: var(--bone);
+    }
+
+    .refcard-tooltip .refcard-tclose {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
+      background: var(--card-border);
+      color: var(--muted);
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: 0.7rem;
+      cursor: pointer;
     }
 
-    .refcard-legend-item .ltext .lname {
-      font-weight: 700;
-      font-size: 0.85rem;
-      color: var(--bone);
-      margin-bottom: 2px;
+    .refcard-tooltip::after {
+      content: '';
+      position: absolute;
+      left: var(--arrow-left, 20px);
+      width: 10px;
+      height: 10px;
+      background: var(--card);
+      border-right: 1px solid var(--ember);
+      border-bottom: 1px solid var(--ember);
+      transform: rotate(45deg);
     }
 
-    .refcard-legend-item .ltext .ldesc {
-      font-size: 0.78rem;
-      color: var(--muted);
-      line-height: 1.4;
+    .refcard-tooltip.arrow-top::after {
+      top: -6px;
+      border-right: none;
+      border-bottom: none;
+      border-left: 1px solid var(--ember);
+      border-top: 1px solid var(--ember);
+    }
+
+    .refcard-tooltip.arrow-bottom::after {
+      bottom: -6px;
     }
 
     /* ---------- Zoom planche officielle ---------- */
@@ -1280,30 +1312,46 @@
     // ---------- DONNÉES DE LA MODALE GLOSSAIRE ----------
     // Deux onglets : planche officielle scannée (zoomable) + carte de référence Ennemi interactive.
     // ---------- Images encodées en base64 (fonctionnent sans dossier externe) ----------
-    const IMG_HOLLOW_SOLDIER = "img/hollow_soldier_final.jpg";
-    const IMG_ATTACK_PHYSICAL_4 = "img/attack_physical_4.png"; // conservé si besoin futur, plus utilisé sur la carte finale
+    const IMG_HOLLOW_SOLDIER = "img/hollow_soldier_v2.png";
     const IMG_PLANCHE_P40 = "img/glossaire_page40.png";
+    const IMG_SHORTSWORD_ARME = "img/shortsword_arme.jpg";
 
     const GLOSSARY_TABS = [
       { key: 'planche', label: 'Glossaire icônes' },
       { key: 'ennemi', label: 'Carte Ennemi' },
+      { key: 'arme', label: 'Carte Arme' },
     ];
 
-    // Carte de référence Hollow Soldier — hotspots en % de la largeur/hauteur de l'image (816x1111 source)
+    // Carte de référence Hollow Soldier — zones rectangulaires en % (x/y = coin haut-gauche, w/h = largeur/hauteur, source 816x1111).
+    // Badge numéroté au coin haut-gauche par défaut, ou bas-gauche (corner:'bl') pour éviter de chevaucher la zone au-dessus.
     const ENNEMI_REFCARD = {
       image: IMG_HOLLOW_SOLDIER,
-      overlays: [
-        // badge recréé pour l'attaque physique (absent du visuel source) + valeurs Parade/Résistance
-        { type: 'img', src: IMG_ATTACK_PHYSICAL_4, x: 58, y: 71, w: 18 },
-      ],
       hotspots: [
-        { num: 1, x: 13, y: 10, w: 17.7, h: 17.1, name: "Niveau de Menace", desc: "Détermine l'ordre d'activation des ennemis entre eux lors du combat : du plus haut au plus bas niveau de menace." },
-        { num: 2, x: 84, y: 10, w: 18.4, h: 16.4, name: "Santé de Départ", desc: "Dégâts que l'ennemi peut subir avant d'être vaincu et retiré de la tuile. Un jeton blessure est placé sous lui à chaque dégât subi." },
-        { num: 3, x: 12, y: 58, w: 17.8, h: 16.1, name: "Portée d'Attaque", desc: "Portée maximale à laquelle la figurine ennemie peut attaquer les personnages." },
-        { num: 4, x: 48, y: 58, w: 20.8, h: 17.6, name: "Valeurs de Parade et de Résistance", desc: "Réduisent respectivement les dégâts physiques et magiques subis par l'ennemi lors des attaques des personnages." },
-        { num: 5, x: 84, y: 58, w: 17.8, h: 15.8, name: "Difficulté d'Esquive", desc: "Détermine la difficulté pour les personnages d'esquiver l'attaque de cet ennemi." },
-        { num: 6, x: 33.5, y: 77.5, w: 59.1, h: 23, radius: "12px", name: "Icônes de Comportement", desc: "Le cœur de tout ennemi : elles déterminent son comportement à chaque activation, résolues de gauche à droite. Ici : se déplacer de 1 repère vers le personnage le plus proche, puis attaquer ce personnage pour 4 dégâts physiques. Le petit anneau à côté de chaque icône indique que l'action cible le personnage le plus proche." },
-        { num: 7, x: 84, y: 34, w: 18.4, h: 15.2, name: "Icônes Ennemi", desc: "Symbole d'identification visuelle rapide du type d'ennemi, utilisé sur les cartes Rencontre pour indiquer quelles figurines placer." },
+        { num: 1, x: 5, y: 5, w: 17, h: 11, name: "Niveau de Menace", desc: "Détermine l'ordre d'activation des ennemis entre eux lors du combat : du plus haut au plus bas niveau de menace." },
+        { num: 2, x: 77, y: 5, w: 17, h: 11, name: "Santé de Départ", desc: "Dégâts que l'ennemi peut subir avant d'être vaincu et retiré de la tuile. Un jeton blessure est placé sous lui à chaque dégât subi." },
+        { num: 3, x: 5, y: 53, w: 17, h: 11, name: "Portée d'Attaque", desc: "Portée maximale à laquelle la figurine ennemie peut attaquer les personnages." },
+        { num: 4, x: 39, y: 52, w: 19, h: 14, name: "Valeurs de Parade et de Résistance", desc: "Réduisent respectivement les dégâts physiques et magiques subis par l'ennemi lors des attaques des personnages." },
+        { num: 5, x: 77, y: 53, w: 17, h: 11, name: "Difficulté d'Esquive", desc: "Détermine la difficulté pour les personnages d'esquiver l'attaque de cet ennemi." },
+        { num: 6, x: 6, y: 67, w: 58, h: 20, corner: 'bl', name: "Icônes de Comportement", desc: "Le cœur de tout ennemi : elles déterminent son comportement à chaque activation, résolues de gauche à droite. Ici : se déplacer de 1 repère vers le personnage le plus proche, puis attaquer ce personnage pour 4 dégâts physiques." },
+        { num: 7, x: 77, y: 29, w: 17, h: 11, name: "Icônes Ennemi", desc: "Symbole d'identification visuelle rapide du type d'ennemi, utilisé sur les cartes Rencontre pour indiquer quelles figurines placer." }
+      ]
+    };
+
+    // Carte de référence Shortsword — zones rectangulaires en % (x/y = coin haut-gauche, w/h = largeur/hauteur).
+    // Badge numéroté épinglé au coin haut-gauche par défaut, ou bas-gauche si corner:'bl' (évite de chevaucher la zone Actions au-dessus).
+    const ARME_REFCARD = {
+      image: IMG_SHORTSWORD_ARME,
+      hotspots: [
+        { num: 1, x: 7, y: 60, w: 86, h: 23, name: "Actions", desc: "Attaques ou effets disponibles. Le chiffre entre crochets est le coût en Énergie ; les dés colorés indiquent quoi lancer." },
+        { num: 2, x: 74, y: 6, w: 18, h: 12, name: "Type de Carte", desc: "Icône indiquant la catégorie de la carte (équipement de départ, trésor de base, trésor de classe...)." },
+        { num: 3, x: 74, y: 20, w: 18, h: 12, name: "Emplacement de l'Équipement", desc: "Indique où la carte se place sur la fiche de personnage (main, armure...)." },
+        { num: 4, x: 8, y: 6, w: 18, h: 12, name: "Portée", desc: "Portée de base depuis laquelle l'arme peut attaquer." },
+        { num: 5, x: 7, y: 20, w: 19, h: 26, name: "Caractéristiques Exigées", desc: "Valeurs minimales de Force / Dextérité / Intelligence / Foi requises pour utiliser cet équipement." },
+        { num: 6, x: 7, y: 84, w: 19, h: 12, corner: 'bl', name: "Parade", desc: "Réduit les dégâts physiques subis lors d'une attaque ennemie." },
+        { num: 7, x: 29, y: 84, w: 19, h: 12, corner: 'bl', name: "Résistance", desc: "Réduit les dégâts magiques subis lors d'une attaque ennemie." },
+        { num: 8, x: 51, y: 84, w: 19, h: 12, corner: 'bl', name: "Esquive", desc: "Modifie le jet de dés lors d'une tentative d'esquive." },
+        { num: 9, x: 73, y: 84, w: 19, h: 12, corner: 'bl', name: "Emplacement d'Amélioration", desc: "Nombre d'améliorations que la carte peut recevoir chez André le Forgeron." },
+        { num: 10, x: 74, y: 34, w: 18, h: 12, name: "Ensemble de Symboles", desc: "Indique de quelle extension de Dark Souls: The Board Game provient la carte." }
       ]
     };
 
@@ -1375,71 +1423,145 @@
       }
 
       if (glossaryTab === 'ennemi') {
-        const card = ENNEMI_REFCARD;
-        let hotspotsHtml = '';
-        card.hotspots.forEach(h => {
-          hotspotsHtml += `<div class="refcard-hotspot" id="hs-${h.num}" onclick="highlightRefcard(${h.num})"><span class="num">${h.num}</span></div>`;
-        });
-        let overlaysHtml = '';
-        (card.overlays || []).forEach((o, i) => {
-          overlaysHtml += `<div class="refcard-overlay-icon" id="ov-${i}" style="width:${o.w}%;"><img src="${o.src}" alt=""></div>`;
-        });
-        let legendHtml = '';
-        card.hotspots.forEach(h => {
-          legendHtml += `
-          <div class="refcard-legend-item" id="leg-${h.num}" onclick="highlightRefcard(${h.num})">
-            <div class="num-badge">${h.num}</div>
-            <div class="ltext">
-              <div class="lname">${h.name}</div>
-              <div class="ldesc">${h.desc}</div>
-            </div>
-          </div>`;
-        });
+        renderEnnemiCard();
+        return;
+      }
 
-        document.getElementById('glossary-body').innerHTML = `
-          <p style="color:var(--muted); font-size:0.8rem; margin:0 0 12px; line-height:1.4;">Exemple avec la carte de référence <b>Hollow Soldier</b>, le plus basique des ennemis. Toutes les cartes ennemi suivent la même structure. Touchez un numéro sur la carte ou dans la liste ci-dessous.</p>
-          <div class="refcard-wrap">
-            <img class="refcard-bg" src="${card.image}" alt="Carte de référence Hollow Soldier">
-            ${overlaysHtml}
-            ${hotspotsHtml}
-          </div>
-          <div class="refcard-legend">${legendHtml}</div>
-        `;
-
-        // Positionnement en JS pur (évite tout conflit de cascade CSS avec le style inline)
-        const wrapEl = document.querySelector('.refcard-wrap');
-        const wrapWidth = wrapEl ? wrapEl.offsetWidth : 340;
-        card.hotspots.forEach(h => {
-          const el = document.getElementById('hs-' + h.num);
-          if (el) {
-            el.style.setProperty('left', h.x + '%');
-            el.style.setProperty('top', h.y + '%');
-            const wPx = (h.w || 8.3) / 100 * wrapWidth;
-            const hPx = (h.h || 8.3) / 100 * wrapWidth;
-            el.style.setProperty('--hs-w', wPx + 'px');
-            el.style.setProperty('--hs-h', hPx + 'px');
-            if (h.radius) el.style.setProperty('--hs-radius', h.radius);
-          }
-        });
-        (card.overlays || []).forEach((o, i) => {
-          const el = document.getElementById('ov-' + i);
-          if (el) {
-            el.style.setProperty('left', o.x + '%');
-            el.style.setProperty('top', o.y + '%');
-          }
-        });
+      if (glossaryTab === 'arme') {
+        renderArmeCard();
       }
     }
 
-    function highlightRefcard(num) {
-      document.querySelectorAll('.refcard-hotspot, .refcard-legend-item').forEach(el => el.classList.remove('highlight'));
-      const hs = document.getElementById('hs-' + num);
-      const leg = document.getElementById('leg-' + num);
-      if (hs) hs.classList.add('highlight');
-      if (leg) {
-        leg.classList.add('highlight');
-        leg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // ---------- Cartes de référence interactives (Ennemi + Arme) : rendu + infobulles au clic ----------
+    let refcardOpenNum = null;
+    let refcardEventsBound = false;
+
+    function renderRefCard(card, introHtml, altText) {
+      let hitboxesHtml = '';
+      card.hotspots.forEach(h => {
+        hitboxesHtml += `<div class="refcard-hitbox" id="rc-hs-${h.num}" data-num="${h.num}"><div class="refcard-badge${h.corner === 'bl' ? ' bl' : ''}">${h.num}</div></div>`;
+      });
+
+      document.getElementById('glossary-body').innerHTML = `
+        ${introHtml}
+        <div class="refcard-wrap" id="refcard-wrap">
+          <img class="refcard-bg" src="${card.image}" alt="${altText}">
+          ${hitboxesHtml}
+        </div>
+      `;
+
+      card.hotspots.forEach(h => {
+        const el = document.getElementById('rc-hs-' + h.num);
+        if (el) {
+          el.style.left = h.x + '%';
+          el.style.top = h.y + '%';
+          el.style.width = h.w + '%';
+          el.style.height = h.h + '%';
+        }
+      });
+
+      refcardOpenNum = null;
+      setupRefCardEvents();
+    }
+
+    function renderEnnemiCard() {
+      renderRefCard(
+        ENNEMI_REFCARD,
+        `<p style="color:var(--muted); font-size:0.8rem; margin:0 0 12px; line-height:1.4;">Exemple avec la carte de référence <b>Hollow Soldier</b>, le plus basique des ennemis. Toutes les cartes ennemi suivent la même structure. Touchez un numéro sur la carte pour afficher sa définition.</p>`,
+        "Carte de référence Hollow Soldier"
+      );
+    }
+
+    function renderArmeCard() {
+      renderRefCard(
+        ARME_REFCARD,
+        `<p style="color:var(--muted); font-size:0.8rem; margin:0 0 12px; line-height:1.4;">Exemple avec le <b>Shortsword</b>. Toutes les cartes équipement suivent la même structure. Touchez un numéro sur la carte pour afficher sa définition.</p>`,
+        "Carte de référence Shortsword"
+      );
+    }
+
+    // Gestionnaire unique et délégué (fiable sur mobile, notamment iOS Safari,
+    // contrairement à des stopPropagation() individuels par zone). Enregistré une seule fois,
+    // fonctionne pour les deux cartes selon l'onglet actif.
+    function setupRefCardEvents() {
+      if (refcardEventsBound) return;
+      refcardEventsBound = true;
+
+      document.addEventListener('pointerdown', (e) => {
+        if (glossaryTab !== 'ennemi' && glossaryTab !== 'arme') return;
+
+        const closeBtn = e.target.closest('.refcard-tclose');
+        if (closeBtn) { closeRefTooltip(); return; }
+
+        const box = e.target.closest('.refcard-hitbox');
+        if (box) {
+          const num = parseInt(box.dataset.num, 10);
+          const wasOpen = refcardOpenNum === num;
+          closeRefTooltip();
+          if (!wasOpen) {
+            const card = glossaryTab === 'ennemi' ? ENNEMI_REFCARD : ARME_REFCARD;
+            const h = card.hotspots.find(x => x.num === num);
+            openRefTooltip(h, box);
+          }
+          return;
+        }
+
+        if (e.target.closest('.refcard-tooltip')) return;
+
+        closeRefTooltip();
+      });
+    }
+
+    function closeRefTooltip() {
+      const oldTip = document.getElementById('refcard-tooltip');
+      if (oldTip) oldTip.remove();
+      document.querySelectorAll('.refcard-hitbox.open').forEach(el => el.classList.remove('open'));
+      refcardOpenNum = null;
+    }
+
+    function openRefTooltip(h, box) {
+      const wrapEl = document.getElementById('refcard-wrap');
+      if (!wrapEl) return;
+
+      box.classList.add('open');
+      refcardOpenNum = h.num;
+
+      const tip = document.createElement('div');
+      tip.className = 'refcard-tooltip';
+      tip.id = 'refcard-tooltip';
+      tip.innerHTML = `<div class="refcard-tclose">✕</div><div class="tname">${h.num}. ${h.name}</div><div class="tdesc">${h.desc}</div>`;
+      wrapEl.appendChild(tip);
+
+      const wrapRect = wrapEl.getBoundingClientRect();
+      const tipWidth = 210;
+      const anchorXPct = h.x + h.w / 2;
+
+      let left = (anchorXPct / 100) * wrapRect.width - tipWidth / 2;
+      left = Math.max(4, Math.min(left, wrapRect.width - tipWidth - 4));
+
+      const showBelow = h.y < 50;
+      let top;
+      if (showBelow) {
+        top = ((h.y + h.h) / 100) * wrapRect.height + 10;
+        tip.classList.add('arrow-top');
+      } else {
+        top = (h.y / 100) * wrapRect.height - 10;
+        tip.classList.add('arrow-bottom');
       }
+
+      tip.style.left = left + 'px';
+      if (showBelow) {
+        tip.style.top = top + 'px';
+      } else {
+        tip.style.top = 'auto';
+        tip.style.bottom = (wrapRect.height - top) + 'px';
+      }
+
+      const anchorCenterX = (anchorXPct / 100) * wrapRect.width;
+      const arrowLeft = Math.max(10, Math.min(anchorCenterX - left - 5, tipWidth - 20));
+      tip.style.setProperty('--arrow-left', arrowLeft + 'px');
+
+      requestAnimationFrame(() => tip.classList.add('visible'));
     }
 
     // ---------- Zoom pincer/molette pour la planche officielle ----------
